@@ -1,0 +1,184 @@
+/* Scope the presentation shell to this route, including after client navigation. */
+body:has(.cabutan-page) { background: #071e30; }
+body:has(.cabutan-page) > .airline-navbar,
+body:has(.cabutan-page) > .site-footer { display: none; }
+body:has(.cabutan-page) > .site-content { max-width: none; }
+.cabutan-page {
+  --draw-navy: #082d46;
+  --draw-deep: #071e30;
+  --draw-gold: #e9c46a;
+  --draw-muted: #b5c8d5;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  min-height: 100svh;
+  padding: 0 clamp(20px, 3vw, 64px);
+  color: #f5f8fa;
+  background: var(--draw-deep);
+  font-family: var(--font-inter), Arial, sans-serif;
+}
+.cabutan-page:fullscreen { height: 100dvh; overflow-y: auto; }
+.cabutan-page *, .cabutan-page *::before, .cabutan-page *::after { box-sizing: border-box; }
+.cabutan-page svg { width: 18px; height: 18px; flex-shrink: 0; }
+.cabutan-page p, .cabutan-page h1, .cabutan-page h2, .cabutan-page h3, .cabutan-page dl, .cabutan-page dd { margin: 0; }
+.cabutan-toolbar { display: flex; align-items: center; gap: 24px; min-height: 66px; border-bottom: 1px solid #ffffff20; }
+.cabutan-back { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; color: var(--draw-muted); font-size: 12px; font-weight: 500; text-decoration: none; }
+.cabutan-back:hover { color: #fff; }
+.cabutan-airline { display: inline-flex; align-items: center; gap: 9px; color: var(--draw-gold); font-size: 14px; font-weight: 600; border-left: 1px solid #ffffff26; padding-left: 24px; }
+.cabutan-airline svg { transform: rotate(-20deg); }
+.cabutan-view-controls { display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-left: auto; }
+.cabutan-view-button { display: inline-flex; align-items: center; justify-content: center; gap: 9px; min-height: 40px; padding: 8px 13px; border: 1px solid #486173; border-radius: 6px; background: transparent; color: #e4edf3; font: 500 12px/1.4 var(--font-inter), Arial, sans-serif; cursor: pointer; }
+.cabutan-view-button:hover, .cabutan-view-button[aria-expanded="true"] { background: #19394e; border-color: #9fb4c3; }
+.cabutan-view-button:last-child { background: #16374d; }
+.cabutan-page a:focus-visible, .cabutan-page button:focus-visible, .cabutan-history-list:focus-visible { outline: 3px solid var(--draw-gold); outline-offset: 4px; }
+.cabutan-header { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
+.cabutan-header > div { min-width: 0; }
+.cabutan-header h1 { font-size: clamp(24px, 2.6vw, 42px); font-weight: 650; line-height: 1.2; letter-spacing: -0.035em; }
+.cabutan-header > div > p { color: var(--draw-muted); font-size: clamp(12px, 1vw, 16px); line-height: 1.5; margin-top: 8px; max-width: 64ch; }
+.cabutan-stats { display: flex; align-items: center; flex-shrink: 0; }
+.cabutan-stats > div { display: flex; flex-direction: column; gap: 4px; padding: 0 clamp(16px, 2vw, 36px); border-left: 1px solid #ffffff26; }
+.cabutan-stats > div:last-child { padding-right: 0; }
+.cabutan-stats dt { display: flex; align-items: center; gap: 6px; color: var(--draw-muted); font-size: 12px; white-space: nowrap; }
+.cabutan-stats dt svg { height: 14px; width: 14px; }
+.cabutan-stats dd { font-size: clamp(24px, 2.2vw, 36px); font-weight: 600; line-height: 1.2; font-variant-numeric: tabular-nums; }
+.cabutan-stat-eligible dd { color: #a3dbc7; }
+.cabutan-stats > div:last-child dd { color: var(--draw-gold); }
+.cabutan-alert { flex-shrink: 0; background: #fff4d6; color: #62420c; border-left: 4px solid var(--draw-gold); padding: 12px 16px; border-radius: 4px; font-size: 13px; line-height: 1.6; }
+.cabutan-alert p + p { margin-top: 6px; }
+.cabutan-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; flex: 1; min-height: 0; }
+.has-history .cabutan-layout { grid-template-columns: minmax(0, 1fr) clamp(300px, 25vw, 420px); }
+.cabutan-stage { position: relative; isolation: isolate; display: flex; flex-direction: column; min-width: 0; overflow: hidden; background: #0c2c42; border: 1px solid #365265; border-top: 3px solid #c7a052; border-radius: 10px; }
+.cabutan-stage::before { content: ''; position: absolute; z-index: -1; pointer-events: none; inset: 0; background: radial-gradient(ellipse at 50% 40%, #17435b 0, transparent 70%); }
+.cabutan-stage-meta { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 16px 26px; border-bottom: 1px solid #ffffff14; }
+.cabutan-stage-meta > span:first-child { display: inline-flex; align-items: center; gap: 8px; color: var(--draw-muted); font-size: 13px; }
+.cabutan-stage-meta strong { color: #f3d99d; font-size: 14px; font-weight: 600; }
+.cabutan-status { display: inline-flex; align-items: center; gap: 8px; color: #cfdee7; font-size: 12px; line-height: 1.4; }
+.cabutan-status > span { width: 7px; height: 7px; border-radius: 50%; background: var(--draw-gold); }
+.cabutan-status.is-saved { color: #a4dcc3; }
+.cabutan-status.is-saved > span { background: #8ad1b5; }
+.cabutan-stage-body { position: relative; display: flex; flex: 1; align-items: center; flex-direction: column; justify-content: center; text-align: center; padding: 28px; }
+.cabutan-stage-heading { display: flex; justify-content: center; align-items: center; gap: 12px; }
+.cabutan-stage-heading > svg { color: var(--draw-gold); width: 26px; height: 26px; stroke-width: 1.5; }
+.cabutan-stage h2 { color: #eef5f9; font-size: clamp(20px, 2vw, 32px); font-weight: 500; line-height: 1.3; letter-spacing: -0.025em; }
+.cabutan-passport-label { color: var(--draw-muted); font-size: 13px; margin-top: 20px !important; }
+.cabutan-digits { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1vw, 18px); width: 100%; max-width: 900px; margin-top: 12px; }
+.cabutan-digit { position: relative; display: grid; place-items: center; flex: 0 1 176px; min-width: 0; height: clamp(116px, 18vh, 220px); border: 1px solid #607588; border-radius: 8px; background: linear-gradient(#24465d 49.5%, #193c53 50%); box-shadow: 0 5px 0 #051a29; font-size: clamp(20px, min(calc(min(68vw, 58rem) / var(--digit-count)), 16vh), 166px); font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; color: #fff4d8; }
+.cabutan-digit::after { content: ''; position: absolute; height: 1px; background: #081e2d; box-shadow: 0 1px 0 #ffffff0a; left: 0; right: 0; top: 50%; }
+.cabutan-digit > span { text-shadow: 0 3px 4px #00000030; }
+.is-spinning .cabutan-digit > span { animation: cabutan-flap 140ms ease-in-out infinite; }
+.is-spinning .cabutan-digit:nth-child(2n) > span { animation-delay: 35ms; }
+.cabutan-winner { display: flex; flex-direction: column; justify-content: center; align-items: center; min-height: 114px; max-width: 100%; padding-top: 24px; }
+.cabutan-winner.has-winner { gap: 6px; }
+.cabutan-winner-label { color: var(--draw-gold); font-size: 12px; line-height: 1.5; }
+.cabutan-winner h3 { font-size: clamp(24px, 3vw, 48px); font-weight: 650; line-height: 1.2; letter-spacing: -0.025em; overflow-wrap: anywhere; max-width: 40ch; text-wrap: balance; }
+.cabutan-winner p { color: var(--draw-muted); font-size: clamp(14px, 1.2vw, 20px); line-height: 1.5; max-width: 64ch; text-wrap: balance; }
+.cabutan-stage-controls { position: relative; padding: 18px 24px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px 24px; align-items: center; border-top: 1px solid #ffffff20; background: #092336; }
+.cabutan-draw-button { grid-column: 2; grid-row: 1 / 3; display: inline-flex; align-items: center; justify-content: center; gap: 10px; min-height: 54px; min-width: 320px; max-width: 100%; border: 1px solid #f3d68f; border-radius: 6px; background: var(--draw-gold); color: #092b42; font-family: inherit; font-weight: 650; font-size: 15px; padding: 14px 24px; cursor: pointer; transition: background 160ms; }
+.cabutan-draw-button:hover:not(:disabled) { background: #f4d991; }
+.cabutan-draw-button:active:not(:disabled) { background: #d7b259; }
+.cabutan-draw-button:disabled { background: #314956; color: #c0ced7; border-color: #4b6270; cursor: not-allowed; }
+.cabutan-stage-controls > p { grid-column: 3; display: flex; align-items: center; gap: 6px; color: var(--draw-muted); font-size: 11px; line-height: 1.5; }
+.cabutan-stage-controls > p svg { width: 14px; height: 14px; }
+.cabutan-stage-controls > .cabutan-remaining { grid-column: 1; grid-row: 1 / 3; font-size: 12px; max-width: 26ch; }
+.cabutan-history { display: flex; flex-direction: column; min-width: 0; min-height: 0; background: #102d41; border: 1px solid #365265; border-radius: 10px; overflow: hidden; }
+.cabutan-history[hidden] { display: none; }
+.cabutan-history-header { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 24px 22px 0; }
+.cabutan-history-header > div { display: flex; gap: 9px; align-items: center; }
+.cabutan-history-header svg { color: var(--draw-gold); }
+.cabutan-history-header h2 { font-size: 17px; font-weight: 600; letter-spacing: -0.025em; }
+.cabutan-history-header > span { display: grid; place-items: center; min-width: 28px; height: 28px; border: 1px solid #486173; border-radius: 5px; font-size: 12px; padding: 0 6px; }
+.cabutan-history-intro { color: var(--draw-muted); font-size: 12px; line-height: 1.5; padding: 8px 22px 22px; }
+.cabutan-history-list { list-style: none; margin: 0; padding: 0 14px 14px; flex: 1; min-height: 0; max-height: 60vh; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #526c7e transparent; }
+.cabutan-history-list li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 10px; padding: 18px 10px; border-bottom: 1px solid #ffffff1c; }
+.cabutan-history-list li.is-latest { background: #e9c46a0c; border: 1px solid #e9c46a60; border-radius: 6px; margin-bottom: 3px; }
+.cabutan-history-rank { color: var(--draw-muted); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; padding-top: 3px; }
+.cabutan-history-person > div { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 8px; }
+.cabutan-history-passport { color: #f3d99d; font-size: 18px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.cabutan-latest-label { color: #f3d99d; font-size: 10px; padding: 3px 6px; border-radius: 4px; background: #e9c46a18; }
+.cabutan-history-person h3 { font-size: 13px; line-height: 1.6; font-weight: 500; overflow-wrap: anywhere; }
+.cabutan-history-person > p { font-size: 12px; color: var(--draw-muted); line-height: 1.55; margin-top: 4px; }
+.cabutan-history-empty { display: flex; flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 12px; text-align: center; padding: 40px 28px; min-height: 220px; }
+.cabutan-history-empty > svg { width: 36px; height: 36px; color: var(--draw-gold); stroke-width: 1.3; }
+.cabutan-history-empty h3 { font-size: 15px; font-weight: 500; }
+.cabutan-history-empty p { font-size: 12px; line-height: 1.7; color: var(--draw-muted); max-width: 28ch; }
+.cabutan-history-note { display: flex; align-items: flex-start; gap: 8px; color: var(--draw-muted); border-top: 1px solid #ffffff20; padding: 18px 22px; margin-top: auto; }
+.cabutan-history-note svg { width: 15px; height: 15px; margin-top: 2px; color: #a4dcc3; }
+.cabutan-history-note p { font-size: 11px; line-height: 1.7; }
+.cabutan-footer { display: flex; justify-content: space-between; gap: 16px; padding: 0 0 18px; color: #9fb6c5; font-size: 11px; line-height: 1.5; }
+.cabutan-announcement { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.cabutan-spinner { animation: cabutan-spin 1s linear infinite; }
+.cabutan-confetti { position: absolute; inset: 0; z-index: 3; pointer-events: none; overflow: hidden; }
+.cabutan-confetti i { position: absolute; top: -20px; left: var(--piece-x); width: 7px; height: 13px; background: #e9c46a; opacity: 0; animation: cabutan-confetti-fall 2.8s var(--piece-delay) ease-in forwards; }
+.cabutan-confetti i:nth-child(3n) { background: #e8f2f8; width: 6px; height: 6px; border-radius: 50%; }
+.cabutan-confetti i:nth-child(3n + 1) { background: #90c9c4; }
+.is-celebrating .cabutan-winner { animation: cabutan-reveal 380ms ease-out both; }
+@keyframes cabutan-spin { to { transform: rotate(360deg); } }
+@keyframes cabutan-flap { 50% { transform: translateY(3px) rotateX(18deg); opacity: 0.65; } }
+@keyframes cabutan-reveal { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cabutan-confetti-fall { 0% { opacity: 0; transform: translateY(0) rotate(0); } 10% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: translateY(100vh) rotate(var(--piece-turn)); } }
+@media (min-width: 1001px) and (min-height: 650px) {
+  .cabutan-page { height: 100svh; }
+  .cabutan-history-list { max-height: none; }
+  .cabutan-layout { flex: 1 0 auto; }
+}
+@media (min-width: 1001px) and (max-height: 850px) {
+  .cabutan-page { gap: 16px; }
+  .cabutan-toolbar { min-height: 56px; }
+  .cabutan-stage-meta { padding: 12px 22px; }
+  .cabutan-stage-body { padding: 18px 24px; }
+  .cabutan-passport-label { margin-top: 12px !important; }
+  .cabutan-winner { min-height: 94px; padding-top: 18px; }
+  .cabutan-winner h3 { font-size: clamp(24px, 2.5vw, 36px); }
+  .cabutan-stage-controls { padding: 14px 22px; }
+  .has-history .cabutan-stage-controls { grid-template-columns: 1fr; gap: 8px; text-align: center; }
+  .has-history .cabutan-stage-controls > * { grid-column: 1; grid-row: auto; justify-content: center; margin: 0 auto; }
+  .has-history .cabutan-stage-controls > p:last-child { display: none; }
+  .cabutan-footer { padding-bottom: 12px; }
+}
+@media (max-width: 1200px) {
+  .cabutan-stage-controls { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+  .cabutan-stage-controls > * { grid-column: 1; grid-row: auto; justify-content: center; margin: 0 auto; }
+  .cabutan-stage-controls > .cabutan-remaining { grid-column: 1; grid-row: auto; max-width: none; }
+  .cabutan-stage-controls > p:last-child { display: none; }
+  .cabutan-stats > div { padding-left: 16px; padding-right: 16px; }
+}
+@media (max-width: 1000px) {
+  .cabutan-page { gap: 20px; }
+  .cabutan-header { align-items: flex-start; flex-direction: column; gap: 20px; }
+  .cabutan-stats { width: 100%; }
+  .cabutan-stats > div { flex: 1; padding-left: 20px; }
+  .cabutan-stats > div:first-child { padding-left: 0; border: 0; }
+  .has-history .cabutan-layout { grid-template-columns: minmax(0, 1fr); }
+  .cabutan-history-list { max-height: 360px; }
+  .cabutan-stage-body { padding: 36px 20px; }
+  .cabutan-winner h3 { font-size: clamp(24px, 4vw, 40px); }
+  .cabutan-airline { display: none; }
+}
+@media (max-width: 600px) {
+  .cabutan-page { padding: 0 16px; gap: 18px; }
+  .cabutan-toolbar { flex-wrap: wrap; justify-content: space-between; gap: 0 12px; padding: 10px 0; }
+  .cabutan-back { font-size: 11px; }
+  .cabutan-view-controls { gap: 6px; }
+  .cabutan-view-button { padding: 8px; font-size: 11px; gap: 6px; }
+  .cabutan-view-button:first-child span { display: none; }
+  .cabutan-header h1 { font-size: 28px; }
+  .cabutan-stats dt { font-size: 11px; }
+  .cabutan-stats dt svg { display: none; }
+  .cabutan-stage-meta { padding: 14px; gap: 8px; }
+  .cabutan-stage-meta > span:first-child, .cabutan-status { font-size: 11px; }
+  .cabutan-stage-body { padding: 28px 16px; }
+  .cabutan-stage-heading { gap: 8px; }
+  .cabutan-stage-heading > svg { width: 22px; height: 22px; }
+  .cabutan-stage h2 { font-size: 20px; }
+  .cabutan-digit { height: 116px; }
+  .cabutan-winner { min-height: 120px; }
+  .cabutan-stage-controls { padding: 18px 14px; }
+  .cabutan-draw-button { min-width: 0; width: 100%; font-size: 14px; }
+  .cabutan-footer { flex-direction: column; align-items: center; gap: 4px; padding-bottom: 16px; text-align: center; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cabutan-page *, .cabutan-page *::before, .cabutan-page *::after { animation: none !important; transition: none !important; }
+  .cabutan-confetti { display: none; }
+}

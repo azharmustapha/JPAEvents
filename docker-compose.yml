@@ -1,0 +1,15 @@
+services:
+  web:
+    container_name: jpaevents-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Supabase URL diperlukan}
+        NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?Supabase public key diperlukan}
+        NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT: ${NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT:-false}
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    env_file:
+      - .env.production

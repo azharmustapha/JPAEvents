@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.env*
+!.env.example
+docs/superpowers
+tests
+supabase/tests
+npm-debug.log
+.verification
+.playwright-mcp
