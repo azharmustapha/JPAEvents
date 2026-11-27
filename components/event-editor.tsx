@@ -110,9 +110,10 @@ export function EventEditor({eventId}:{eventId?:string}) {
       <div className={styles.previewDetails}><p><Calendar aria-hidden="true"/><span>{dateLabel}</span></p><p><Clock aria-hidden="true"/><span>{String(settings.masa_mula).slice(0,5)}<small>{String(settings.timezone).replaceAll('_',' ')}</small></span></p><p><MapPin aria-hidden="true"/><span>{String(settings.lokasi)||'Lokasi acara'}</span></p></div>
       {settings.description&&<p className={styles.previewDescription}>{String(settings.description)}</p>}
       {publishedPath?<Link href={publishedPath} target="_blank" rel="noopener noreferrer" className={styles.previewAction} style={{background:primary,color:contrastText(primary)}}>Buka Acara<ArrowUpRight aria-hidden="true"/></Link>:<button type="button" disabled className={styles.previewAction} style={{background:primary,color:contrastText(primary)}}>Buka Acara<ArrowUpRight aria-hidden="true"/></button>}
+      {publishedPath?<Link href={`${publishedPath}/tayangan`} target="_blank" rel="noopener noreferrer" className={`${styles.previewAction} ${styles.projectorAction}`} aria-label="Buka tayangan acara dalam tab baharu">Tayangan<ArrowUpRight aria-hidden="true"/></Link>:<button type="button" disabled className={`${styles.previewAction} ${styles.projectorAction}`} title="Simpan dan terbitkan acara untuk membuka tayangan">Tayangan<ArrowUpRight aria-hidden="true"/></button>}
      </div>
     </div>
-    <p className={styles.previewHint}>{publishedPath?'Buka Acara membuka halaman yang terakhir disimpan dalam tab baharu.':'Simpan dan terbitkan acara untuk mengaktifkan butang Buka Acara.'}</p>
+    <p className={styles.previewHint}>{publishedPath?'Buka Acara dan Tayangan membuka acara yang terakhir disimpan dalam tab baharu.':'Simpan dan terbitkan acara untuk mengaktifkan butang Buka Acara dan Tayangan.'}</p>
     <div className={styles.previewNote}><Sparkles aria-hidden="true"/><p>Pratonton berubah semasa anda menyunting. <strong>Simpan perubahan</strong> untuk mengemas kini halaman acara.</p></div>
    </aside>
   </div>

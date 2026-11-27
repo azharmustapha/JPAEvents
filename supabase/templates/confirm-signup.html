@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="ms">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Sahkan e-mel akaun penganjur JPAEvents</title></head>
+<body style="margin:0;padding:24px 12px;background:#f5f7fa;font-family:Arial,Helvetica,sans-serif;color:#173c58;">
+  <div style="display:none;max-height:0;overflow:hidden;">Sahkan e-mel anda untuk menyediakan ruang penganjur dan mula mengurus acara.</div>
+  <table role="presentation" style="width:100%;max-width:580px;margin:0 auto;border-collapse:collapse;">
+    <tr><td style="padding:24px 28px;background:#003053;color:#ffffff;border-radius:12px 12px 0 0;"><strong style="font-size:24px;">JPAEvents</strong><p style="margin:8px 0 0;font-size:14px;">Ruang untuk setiap acara anda.</p></td></tr>
+    <tr><td style="padding:32px 28px;background:#ffffff;border:1px solid #dce5ed;border-top:0;border-radius:0 0 12px 12px;">
+      <p style="margin:0 0 16px;line-height:1.7;">Salam sejahtera{{ if .Data.full_name }} {{ .Data.full_name }}{{ end }},</p>
+      <h1 style="font-size:24px;line-height:1.3;margin:0 0 16px;">Sahkan e-mel akaun penganjur anda</h1>
+      <p style="font-size:15px;line-height:1.7;">Terima kasih kerana mendaftar dengan JPAEvents. Sahkan alamat e-mel ini untuk mengaktifkan akaun dan menyediakan ruang penganjur anda.</p>
+      <table role="presentation" style="margin:24px 0;border-collapse:collapse;"><tr><td style="background:#003053;border-radius:8px;text-align:center;"><a href="https://jpaevents.vercel.app/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email" style="display:inline-block;padding:16px 24px;font-size:15px;font-weight:bold;color:#ffffff;text-decoration:none;">Sahkan e-mel &amp; teruskan</a></td></tr></table>
+      <p style="font-size:15px;line-height:1.7;">Selepas pengesahan, anda boleh menamakan ruang penganjur, mencipta acara dan berkongsi pautan pendaftaran dengan peserta.</p>
+      <p style="font-size:14px;line-height:1.7;">Jika butang tidak berfungsi, salin dan tampal pautan ini ke dalam pelayar:</p>
+      <p style="font-size:12px;line-height:1.7;overflow-wrap:anywhere;word-break:break-all;"><a href="https://jpaevents.vercel.app/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email" style="color:#087f8c;">https://jpaevents.vercel.app/auth/confirm?token_hash={{ .TokenHash }}&amp;type=email</a></p>
+      <hr style="border:0;border-top:1px solid #e5ebf1;margin:24px 0;">
+      <p style="font-size:13px;line-height:1.7;color:#60758a;">Pautan ini hanya boleh digunakan sekali. Jika sudah tamat tempoh, <a href="https://jpaevents.vercel.app/auth/confirmation-error" style="color:#087f8c;">minta e-mel pengesahan baharu</a> dan gunakan pautan yang paling baharu.</p>
+      <p style="font-size:13px;line-height:1.7;color:#60758a;">Jika anda tidak mendaftar akaun JPAEvents, abaikan e-mel ini. Jangan kongsi pautan pengesahan anda dengan orang lain.</p>
+    </td></tr>
+    <tr><td style="padding:20px;text-align:center;font-size:12px;line-height:1.7;color:#60758a;">E-mel automatik daripada JPAEvents. Sila jangan balas e-mel ini.<br><a href="https://jpaevents.vercel.app" style="color:#60758a;">jpaevents.vercel.app</a></td></tr>
+  </table>
+</body>
+</html>

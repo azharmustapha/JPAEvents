@@ -10,7 +10,7 @@ import { organizerLinks, type OrganizerLink } from './organizer-links';
 import { organizerHref } from '@/lib/organizer-navigation';
 
 export function SiteNavbar() {
-  const { userId, authLoading, event, pathname, explicitId } = useOrganizer();
+  const { userId, displayName, authLoading, event, pathname, explicitId } = useOrganizer();
   const locationKey = `${pathname}:${explicitId ?? ''}`;
   const [openPath, setOpenPath] = useState<string | null>(null);
   const [profilePath, setProfilePath] = useState<string | null>(null);
@@ -51,7 +51,6 @@ export function SiteNavbar() {
   function navigationLinks(items: OrganizerLink[]) {
     return items.map(({ href, label, activePath, icon: Icon }) => {
       const active = activePath === '/admin' || activePath === '/' ? pathname === activePath : Boolean(activePath && pathname.startsWith(activePath));
-      if (authenticated && label === 'Tayangan' && !event?.published) return <span key={label} aria-disabled="true" title="Terbitkan acara untuk membuka tayangan" className="site-nav-link is-disabled">{Icon && <Icon aria-hidden="true" className="size-4" />}<span>{label}</span></span>;
       return <Link key={label} href={href} onClick={closeMenus} aria-current={active ? 'page' : undefined} className={`site-nav-link${active ? ' is-active' : ''}`}>
         {Icon && <Icon aria-hidden="true" className="size-4" />}<span>{label}</span>
       </Link>;
@@ -71,7 +70,7 @@ export function SiteNavbar() {
         <div className="site-desktop-links" aria-busy={authLoading}>{!authLoading && <>
           {navigationLinks(links.filter(link => link.group === 'primary'))}
           {authenticated && <div className="nav-profile" ref={profileRef} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setProfilePath(null); }}>
-            <button ref={profileButton} type="button" className={`nav-profile-toggle${profileOpen ? ' is-open' : ''}`} aria-label="Menu profil penganjur" aria-expanded={profileOpen} aria-controls="profile-navigation" onClick={() => setProfilePath(profileOpen ? null : locationKey)}><span className="nav-profile-avatar"><UserIcon aria-hidden="true" /></span><span>Penganjur</span><ChevronDownIcon aria-hidden="true" className="size-4" /></button>
+            <button ref={profileButton} type="button" className={`nav-profile-toggle${profileOpen ? ' is-open' : ''}`} aria-label={`Menu profil ${displayName}`} aria-expanded={profileOpen} aria-controls="profile-navigation" onClick={() => setProfilePath(profileOpen ? null : locationKey)}><span className="nav-profile-avatar"><UserIcon aria-hidden="true" /></span><span className="nav-profile-name" title={displayName}>{displayName}</span><ChevronDownIcon aria-hidden="true" className="size-4" /></button>
             {profileOpen && <div id="profile-navigation" className="nav-profile-dropdown"><p>Pengurusan acara</p>{navigationLinks(links.filter(link => link.group === 'profile'))}<div className="nav-profile-divider" />{logout}</div>}
           </div>}
         </>}</div>
@@ -79,7 +78,7 @@ export function SiteNavbar() {
           {open ? <CrossIcon aria-hidden="true" /> : <HamburgerMenuIcon aria-hidden="true" />}
         </button>
       </div>
-      {open && <div id="mobile-navigation" className="site-mobile-links"><div className="mobile-primary-links">{navigationLinks(links.filter(link => link.group === 'primary'))}</div>{authenticated && <div className="mobile-profile-links">{navigationLinks(links.filter(link => link.group === 'profile'))}{logout}</div>}</div>}
+      {open && <div id="mobile-navigation" className="site-mobile-links"><div className="mobile-primary-links">{navigationLinks(links.filter(link => link.group === 'primary'))}</div>{authenticated && <div className="mobile-profile-links"><p className="mobile-profile-name">{displayName}</p>{navigationLinks(links.filter(link => link.group === 'profile'))}{logout}</div>}</div>}
       {error && <p role="alert" className="nav-error">{error}</p>}
     </nav>
   </header>;

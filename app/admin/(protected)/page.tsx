@@ -3,11 +3,12 @@
 
 import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
-import { CalendarIcon, ClockIcon, PinIcon, PlusIcon, SearchIcon, CrossIcon, ArrowForwardIcon, UserGroupIcon } from '@govtechmy/myds-react/icon';
+import { CalendarIcon, ClockIcon, PinIcon, PlusIcon, SearchIcon, CrossIcon, ArrowForwardIcon, UserGroupIcon, DesktopIcon } from '@govtechmy/myds-react/icon';
 import { useOrganizer } from '@/components/organizer-provider';
 import { filterEventCatalog, type CatalogStatus } from '@/lib/event-catalog';
 import { organizerColors, organizerHref } from '@/lib/organizer-navigation';
 import { safeEventAsset } from '@/lib/event-assets';
+import { eventPath } from '@/lib/events';
 import { formatDate, formatTime } from '@/lib/date';
 
 const filters: { value: CatalogStatus; label: string }[] = [
@@ -44,6 +45,7 @@ export default function MyEventsPage() {
             {event.organizer_name && <p className="catalog-organizer">{event.organizer_name}</p>}<h2><Link href={`/admin/events/${encodeURIComponent(event.id)}`}>{event.tajuk}</Link></h2>
             <dl className="catalog-card-details"><div><dt><CalendarIcon aria-hidden="true" /><span className="sr-only">Tarikh</span></dt><dd>{formatDate(event.tarikh, event.timezone)}<ClockIcon aria-hidden="true" />{formatTime(event.masa_mula, false, event.timezone)}</dd></div><div><dt><PinIcon aria-hidden="true" /><span className="sr-only">Lokasi</span></dt><dd>{event.lokasi}</dd></div></dl>
             <div className="catalog-card-actions"><Link href={`/admin/events/${encodeURIComponent(event.id)}`} className="catalog-manage" aria-label={`Urus acara ${event.tajuk}`}>Urus acara<ArrowForwardIcon aria-hidden="true" /></Link><Link href={organizerHref('/admin/kehadiran', event.id)} className="catalog-attendance" aria-label={`Kehadiran ${event.tajuk}`}><UserGroupIcon aria-hidden="true" />Kehadiran</Link></div>
+            {event.published && event.slug ? <Link href={eventPath(event.slug, 'tayangan')} target="_blank" rel="noopener noreferrer" className="catalog-projector" aria-label={`Buka tayangan ${event.tajuk} dalam tab baharu`}><DesktopIcon aria-hidden="true" />Tayangan</Link> : <span className="catalog-projector is-disabled" aria-disabled="true" title="Simpan dan terbitkan acara untuk membuka tayangan"><DesktopIcon aria-hidden="true" />Tayangan<small>Terbitkan acara dahulu</small></span>}
           </div>
         </article>;
       })}</div>

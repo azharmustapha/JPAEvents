@@ -8,6 +8,7 @@ services:
         NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL:?Supabase URL diperlukan}
         NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY:?Supabase public key diperlukan}
         NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT: ${NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT:-false}
+        NEXT_PUBLIC_SITE_URL: ${NEXT_PUBLIC_SITE_URL:-https://jpaevents.vercel.app}
     ports:
       - "3000:3000"
     restart: unless-stopped

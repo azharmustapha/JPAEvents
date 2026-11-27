@@ -107,6 +107,7 @@ function AdminLoginForm() {
         <details className="mt-6 border-t border-slate-200 pt-5 text-sm leading-relaxed text-slate-600">
           <summary className="cursor-pointer rounded-sm font-semibold text-[#003053] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053]">Masih tidak dapat log masuk?</summary>
           <p className="mt-3">Pastikan e-mel anda betul dan akaun telah disahkan melalui pautan e-mel. Selepas log masuk kali pertama, anda akan diminta menyediakan ruang penganjur anda.</p>
+          <Link href="/auth/confirmation-error" className="mt-3 inline-flex min-h-11 items-center font-semibold underline">Hantar semula e-mel pengesahan</Link>
         </details>
       </div>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3 text-xs text-slate-600">

@@ -5,11 +5,11 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { getBrowserSupabase } from '@/lib/supabaseClient';
 import { loadAdminSessions } from '@/lib/admin-data';
 import { startPolling } from '@/lib/polling';
-import { organizerHref, resolveOrganizerEvent } from '@/lib/organizer-navigation';
+import { organizerDisplayName, organizerHref, resolveOrganizerEvent } from '@/lib/organizer-navigation';
 import type { Acara } from '@/types/database';
 
 type OrganizerState = {
-  userId: string | null; authLoading: boolean; events: Acara[]; loading: boolean; error: string;
+  userId: string | null; displayName: string; authLoading: boolean; events: Acara[]; loading: boolean; error: string;
   refreshEvents: () => Promise<void>;
 };
 const OrganizerContext = createContext<OrganizerState | null>(null);
@@ -17,6 +17,7 @@ const subscribeHydration = () => () => {};
 
 export function OrganizerProvider({ children }: { children: ReactNode }) {
   const [userId, setUserId] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState('Akaun saya');
   const [authLoading, setAuthLoading] = useState(true);
   const [snapshot, setSnapshot] = useState<{ owner: string | null; events: Acara[]; error: string }>({ owner: null, events: [], error: '' });
 
@@ -28,7 +29,7 @@ export function OrganizerProvider({ children }: { children: ReactNode }) {
       const client = getBrowserSupabase();
       // Auth callbacks stay synchronous: data loading happens in the separate effect.
       const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => {
-        if (active) { setUserId(session?.user.id ?? null); setAuthLoading(false); }
+        if (active) { setUserId(session?.user.id ?? null); setDisplayName(organizerDisplayName(session?.user ?? null)); setAuthLoading(false); }
       });
       unsubscribe = () => subscription.unsubscribe();
     }).catch(() => { if (active) setAuthLoading(false); });
@@ -48,7 +49,7 @@ export function OrganizerProvider({ children }: { children: ReactNode }) {
     const events = await loadAdminSessions(getBrowserSupabase());
     setSnapshot({ owner: userId, events, error: '' });
   }
-  return <OrganizerContext.Provider value={{ userId, authLoading, events: current ? snapshot.events : [], loading: authLoading || Boolean(userId && !current), error: current ? snapshot.error : '', refreshEvents }}>{children}</OrganizerContext.Provider>;
+  return <OrganizerContext.Provider value={{ userId, displayName, authLoading, events: current ? snapshot.events : [], loading: authLoading || Boolean(userId && !current), error: current ? snapshot.error : '', refreshEvents }}>{children}</OrganizerContext.Provider>;
 }
 
 export function useOrganizer() {
@@ -57,7 +58,7 @@ export function useOrganizer() {
   // A streamed Suspense child may hydrate after Auth has already emitted.
   // Give each consumer the same initial snapshot as its server HTML.
   const hydrated = useSyncExternalStore(subscribeHydration, () => true, () => false);
-  const visible = hydrated ? context : { ...context, userId: null, authLoading: true, events: [], loading: true, error: '' };
+  const visible = hydrated ? context : { ...context, userId: null, displayName: 'Akaun saya', authLoading: true, events: [], loading: true, error: '' };
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();

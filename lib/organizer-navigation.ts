@@ -1,5 +1,12 @@
 type EventChoice = { id: string; status_aktif: boolean };
 
+export function organizerDisplayName(user: { email?: string; user_metadata?: Record<string, unknown> } | null): string {
+  for (const value of [user?.user_metadata?.full_name, user?.user_metadata?.name, user?.email]) {
+    if (typeof value === 'string' && value.trim()) return value.trim();
+  }
+  return 'Akaun saya';
+}
+
 export function resolveOrganizerEvent<T extends EventChoice>(events: T[], explicit: string | null, previous: string | null): T | null {
   if (explicit !== null) return events.find(event => event.id === explicit) ?? null;
   return events.find(event => event.id === previous) ?? events.find(event => event.status_aktif) ?? events[0] ?? null;

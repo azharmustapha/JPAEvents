@@ -1,7 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { resolveOrganizerEvent, organizerHref, organizerColors } from '../../lib/organizer-navigation.ts';
+import { resolveOrganizerEvent, organizerHref, organizerColors, organizerDisplayName } from '../../lib/organizer-navigation.ts';
 const events = [{ id: 'one', status_aktif: false }, { id: 'two', status_aktif: true }];
+
+test('profile shows the registered name and falls back for legacy accounts and sign-out', () => {
+  assert.equal(organizerDisplayName({ email: 'ahmad@example.com', user_metadata: { full_name: '  Ahmad Azhar  ' } }), 'Ahmad Azhar');
+  assert.equal(organizerDisplayName({ email: 'ahmad@example.com', user_metadata: { name: 'Ahmad' } }), 'Ahmad');
+  assert.equal(organizerDisplayName({ email: 'ahmad@example.com', user_metadata: { full_name: ' ', name: { invalid: true } } }), 'ahmad@example.com');
+  assert.equal(organizerDisplayName(null), 'Akaun saya');
+});
 
 test('explicit selection wins; an unknown explicit ID never selects a different event', () => {
   assert.equal(resolveOrganizerEvent(events, 'one', 'two')?.id, 'one');

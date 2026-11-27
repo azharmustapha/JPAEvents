@@ -18,7 +18,7 @@ JPAEvents ialah aplikasi web untuk mengurus pendaftaran acara, pas digital dan k
 ### Untuk penganjur
 
 1. Buka halaman utama dan pilih **Cipta akaun penganjur**.
-2. Daftar menggunakan e-mel, sahkan akaun melalui pautan yang diterima dan log masuk.
+2. Daftar menggunakan nama, e-mel dan kata laluan. Klik pautan pengesahan yang diterima untuk menyediakan ruang penganjur.
 3. Namakan ruang kerja anda, kemudian cipta acara baharu.
 4. Lengkapkan butiran acara, tetapkan tema dan sesuaikan keperluan borang pendaftaran.
 5. Pratonton halaman acara, terbitkan acara dan buka pendaftaran.
@@ -82,12 +82,14 @@ Untuk **projek Supabase baharu yang khusus untuk JPAEvents**:
 1. Jalankan `supabase/schema.sql` melalui SQL Editor.
 2. Jalankan `supabase/storage.sql` untuk menyediakan storan imej acara.
 3. Aktifkan pendaftaran e-mel/kata laluan dan pengesahan e-mel (**Confirm email**).
-4. Tetapkan Auth Site URL kepada alamat aplikasi dan benarkan URL penghalaan semula `/auth/confirm`.
-5. Dalam templat e-mel Confirm signup, gunakan pautan pengesahan berikut:
+4. Tetapkan Auth Site URL kepada `https://jpaevents.vercel.app` dan tambah `https://jpaevents.vercel.app/auth/confirm` dalam Redirect URLs.
+5. Dalam templat e-mel Confirm signup, gunakan subjek **Sahkan e-mel akaun penganjur JPAEvents** dan kandungan [templat e-mel Bahasa Melayu](supabase/templates/confirm-signup.html). Pautan pengesahan produksi ialah:
 
 ```text
-{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email
+https://jpaevents.vercel.app/auth/confirm?token_hash={{ .TokenHash }}&type=email
 ```
+
+Ikuti [panduan pengesahan akaun penganjur](docs/organizer-email-setup.md) untuk tetapan Vercel, ujian peranti lain dan pemulihan pautan tamat tempoh. Untuk pemasangan pada domain lain, sesuaikan URL aplikasi dan templat e-mel bersama-sama.
 
 Jika Supabase turut digunakan oleh aplikasi lain, gunakan `supabase/shared-project.sql` dan `supabase/shared-storage.sql` sebagai ganti fail skema/storan di atas, kemudian tetapkan `NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT=true`. Mod ini menggunakan jadual dan fungsi berawalan `jpaevents_` serta bucket `jpaevents-event-assets`.
 
@@ -101,6 +103,7 @@ Isi `.env.local` menggunakan konfigurasi projek Supabase anda:
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-public-anon-or-publishable-key
 NEXT_PUBLIC_JPAEVENTS_SHARED_PROJECT=false
+NEXT_PUBLIC_SITE_URL=https://jpaevents.vercel.app
 ```
 
 Gunakan kunci awam publishable/anon sahaja. Jangan letakkan kunci `service_role` atau secret key dalam pemboleh ubah `NEXT_PUBLIC_*`. Fail persekitaran peribadi dikecualikan daripada Git; `.env.example` disediakan sebagai rujukan.
