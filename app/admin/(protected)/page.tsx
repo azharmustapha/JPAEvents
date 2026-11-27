@@ -1,264 +1,52 @@
 'use client';
+/* eslint-disable @next/next/no-img-element */
 
-
-import React, { useState, useEffect } from 'react';
+import { useState, type CSSProperties } from 'react';
 import Link from 'next/link';
+import { CalendarIcon, ClockIcon, PinIcon, PlusIcon, SearchIcon, CrossIcon, ArrowForwardIcon, UserGroupIcon } from '@govtechmy/myds-react/icon';
 import { useOrganizer } from '@/components/organizer-provider';
-import { getBrowserSupabase } from '@/lib/supabaseClient';
-import { KehadiranPeserta, PassportData } from '@/types/database';
-import { filterAttendance, passportNumber } from '@/lib/attendance';
-import { AdminPassportDialog } from '@/components/admin-passport-dialog';
-import { escapeCsvCell } from '@/lib/csv';
-import { startPolling } from '@/lib/polling';
-import { loadAttendance } from '@/lib/admin-data';
+import { filterEventCatalog, type CatalogStatus } from '@/lib/event-catalog';
+import { organizerColors, organizerHref } from '@/lib/organizer-navigation';
+import { safeEventAsset } from '@/lib/event-assets';
 import { formatDate, formatTime } from '@/lib/date';
-import {
-    Calendar,
-    Gift,
-    Users,
-    Tv,
-    Download,
-    PlusCircle,
-    ListOrdered,
-    ScanLine,
-    Search,
-    RefreshCw,
-    ArrowUpRight,
-    MapPin,
-    Clock,
-    Ticket,
-    Copy,
-    Check,
-    X,
-    CircleCheck
-} from '@/components/ui-icons';
 
-export default function AdminPage() {
-    const { events: senaraiSesi, event: selectedSession, loading, error: sessionError, selectEvent: setSesiDipilih, refreshEvents } = useOrganizer();
-    const sesiDipilih = selectedSession?.id || '';
-    const [senaraiKehadiran, setSenaraiKehadiran] = useState<KehadiranPeserta[]>([]);
-    const [error, setError] = useState('');
-    const [attendanceError, setAttendanceError] = useState('');
-    const [attendanceSession, setAttendanceSession] = useState('');
-    const [saving, setSaving] = useState(false);
+const filters: { value: CatalogStatus; label: string }[] = [
+  { value: 'all', label: 'Semua acara' }, { value: 'open', label: 'Pendaftaran dibuka' },
+  { value: 'published', label: 'Diterbitkan' }, { value: 'draft', label: 'Draf' },
+];
 
-    const [search, setSearch] = useState('');
-    const [passportPreview, setPassportPreview] = useState<PassportData | null>(null);
-    const [copyingPassport, setCopyingPassport] = useState<string | null>(null);
-    const [copyFeedback, setCopyFeedback] = useState<{
-        sessionId: string;
-        participantId: string;
-        name: string;
-        url: string;
-        copied: boolean;
-    } | null>(null);
+export default function MyEventsPage() {
+  const { events, loading, error, refreshEvents } = useOrganizer();
+  const [query, setQuery] = useState('');
+  const [status, setStatus] = useState<CatalogStatus>('all');
+  const [retrying, setRetrying] = useState(false);
+  const visible = filterEventCatalog(events, query, status);
+  const openCount = events.filter(event => event.published && event.status_aktif).length;
+  const draftCount = events.filter(event => !event.published).length;
+  async function retry() { setRetrying(true); try { await refreshEvents(); } catch { /* The provider displays connection failures. */ } finally { setRetrying(false); } }
 
-    useEffect(() => {
-        if (!sesiDipilih) return;
-        return startPolling(() => loadAttendance(getBrowserSupabase(), sesiDipilih), rows => {
-            setSenaraiKehadiran(rows);
-            setAttendanceSession(sesiDipilih);
-            setAttendanceError('');
-        }, () => {
-            setSenaraiKehadiran([]);
-            setAttendanceSession(sesiDipilih);
-            setAttendanceError('Kehadiran tidak dapat dimuatkan. Semak sambungan dan akses pentadbir.');
-        });
-    }, [sesiDipilih]);
-
-    const handleMuatTurunLaporan = () => {
-        if (attendanceSession !== sesiDipilih || attendanceError) return;
-        if (senaraiKehadiran.length === 0) {
-            alert("Tiada rekod kehadiran untuk sesi ini.");
-            return;
-        }
-        const sesiAktifInfo = senaraiSesi.find(s => s.id === sesiDipilih);
-        const namaFail = `Laporan_Kehadiran_${sesiAktifInfo?.kod_sesi || 'JPAEvents'}.csv`;
-
-        const tajukLajur = ['NAMA PESERTA', 'ORGANISASI / KUMPULAN', 'E-MEL', 'WAKTU PENDAFTARAN', 'NO. PASPORT', 'WAKTU DAFTAR HADIR'];
-        const kandunganCSV = [
-            tajukLajur.map(escapeCsvCell).join(','),
-            ...senaraiKehadiran.map(rekod => [
-                rekod.nama_pegawai,
-                rekod.bahagian_unit,
-                rekod.emel || '',
-                `${formatDate(rekod.waktu_hadir, sesiAktifInfo?.timezone)} ${formatTime(rekod.waktu_hadir, true, sesiAktifInfo?.timezone)}`,
-                passportNumber(rekod.no_pasport),
-                rekod.checked_in_at ? `${formatDate(rekod.checked_in_at, sesiAktifInfo?.timezone)} ${formatTime(rekod.checked_in_at, true, sesiAktifInfo?.timezone)}` : ''
-            ].map(escapeCsvCell).join(','))
-        ].join('\r\n');
-
-        const blob = new Blob(['\uFEFF', kandunganCSV], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const pautan = document.createElement('a');
-        pautan.setAttribute('href', url);
-        pautan.setAttribute('download', namaFail);
-        pautan.style.visibility = 'hidden';
-        document.body.appendChild(pautan);
-        pautan.click();
-        document.body.removeChild(pautan);
-        URL.revokeObjectURL(url);
-    };
-
-    const handleSetActive = async (isOpen: boolean) => {
-        setSaving(true);
-        setError('');
-        try {
-            const { error } = await getBrowserSupabase().rpc('set_registration_open', { event_id: sesiDipilih, is_open: isOpen });
-            if (error) throw error;
-            await refreshEvents();
-        } catch { setError('Status sesi tidak dapat dikemas kini. Semak akses pentadbir.'); }
-        finally { setSaving(false); }
-    };
-
-    const handleCopyPassportLink = async (peserta: KehadiranPeserta) => {
-        const url = new URL(`/pasport/${encodeURIComponent(peserta.token_pasport)}`, window.location.origin).href;
-        const feedback = {
-            sessionId: peserta.perhimpunan_id,
-            participantId: peserta.id,
-            name: peserta.nama_pegawai,
-            url,
-        };
-        setCopyingPassport(peserta.id);
-        setCopyFeedback(null);
-        try {
-            await navigator.clipboard.writeText(url);
-            setCopyFeedback({ ...feedback, copied: true });
-        } catch {
-            setCopyFeedback({ ...feedback, copied: false });
-        } finally {
-            setCopyingPassport(null);
-        }
-    };
-
-    const visibleAttendance = attendanceSession === sesiDipilih ? senaraiKehadiran : [];
-    const visibleCopyFeedback = copyFeedback?.sessionId === sesiDipilih ? copyFeedback : null;
-    const attendanceLoading = Boolean(sesiDipilih) && attendanceSession !== sesiDipilih;
-    const filteredAttendance = filterAttendance(visibleAttendance, search);
-    const hasSearch = Boolean(search.trim());
-
-    const actionClass = 'inline-flex min-h-11 items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053] disabled:cursor-not-allowed disabled:opacity-40';
-    const modules = [
-        { href: '/admin/imbas', label: 'Imbas QR', icon: ScanLine },
-        { href: '/admin/tentatif', label: 'Urus tentatif', icon: ListOrdered },
-        { href: '/admin/cabutan', label: 'Cabutan bertuah', icon: Gift },
-        { href: selectedSession?.published ? '/tayangan' : '/admin/events/' + sesiDipilih, label: selectedSession?.published ? 'Skrin projektor' : 'Terbitkan untuk tayangan', icon: Tv },
-    ];
-
-    return (
-        <div className="organizer-dashboard text-[#003053]">
-            <div className="mx-auto max-w-7xl space-y-7">
-                <header className="flex flex-wrap items-start justify-between gap-5">
-                    <div>
-                        <h2 className="text-2xl font-bold tracking-tight">Kehadiran & pendaftaran</h2>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">Semak peserta dan urus perjalanan acara pilihan anda.</p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <Link href="/admin/sesi-baru" className={actionClass + ' bg-[#003053] text-white hover:bg-[#164866]'}><PlusCircle className="size-4" /> Cipta acara</Link>
-                    </div>
-                </header>
-
-                <nav aria-label="Modul pentadbiran" className="grid grid-cols-2 gap-2 lg:grid-cols-4 lg:gap-3">
-                    {modules.map(({ href, label, icon: Icon }) => <Link key={href} href={sesiDipilih ? `${href}?event=${encodeURIComponent(sesiDipilih)}` : '/admin/sesi-baru'} className="group flex min-h-14 items-center gap-2.5 rounded-xl border border-slate-200 bg-white px-3 py-3 text-xs font-semibold transition-colors hover:border-[#b69a60] hover:bg-[#faf8f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053] sm:px-4 sm:text-sm"><Icon className="size-4 shrink-0 text-[#87703f]" />{label}<ArrowUpRight className="ml-auto size-4 shrink-0 text-slate-400 group-hover:text-[#003053]" /></Link>)}
-                </nav>
-
-                {(error || sessionError || attendanceError) && <p role="alert" className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{error || sessionError || attendanceError}</p>}
-
-                <section aria-label="Ringkasan sesi" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
-                    <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
-                        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                            <label htmlFor="admin-session" className="flex items-center gap-2 text-sm font-semibold"><Calendar className="size-4 text-slate-500" /> Pendaftaran acara</label>
-                            {selectedSession && <span className={'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ' + (selectedSession.status_aktif ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600')}><span className={'size-1.5 rounded-full ' + (selectedSession.status_aktif ? 'bg-emerald-600' : 'bg-slate-400')} />{selectedSession.status_aktif ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup'}</span>}
-                        </div>
-                        <select id="admin-session" value={sesiDipilih} disabled={loading || saving || !senaraiSesi.length}
-                            onChange={event => { setSesiDipilih(event.target.value); setSearch(''); setCopyFeedback(null); }}
-                            className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-semibold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053] disabled:opacity-50">
-                            {!senaraiSesi.length && <option value="">{loading ? 'Memuatkan sesi…' : 'Tiada sesi tersedia'}</option>}
-                            {senaraiSesi.map(session => <option key={session.id} value={session.id}>{session.tajuk} ({session.kod_sesi})</option>)}
-                        </select>
-                        {selectedSession && <div className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-xs text-slate-500">
-                            <span className="flex items-center gap-1.5"><Calendar className="size-3.5" />{formatDate(selectedSession.tarikh)}</span>
-                            <span className="flex items-center gap-1.5"><Clock className="size-3.5" />{formatTime(selectedSession.masa_mula)}</span>
-                            <span className="flex items-center gap-1.5"><MapPin className="size-3.5" />{selectedSession.lokasi}</span>
-                        </div>}
-                        <div className="mt-5 flex flex-wrap gap-2 border-t border-slate-100 pt-4">
-                            {selectedSession && <><Link className={actionClass + ' border border-slate-200'} href={`/admin/events/${selectedSession.id}`}>Butiran & tema</Link>{selectedSession.published && <Link className={actionClass + ' border border-slate-200'} href={`/events/${encodeURIComponent(selectedSession.slug || '')}`}>Halaman & pautan acara</Link>}</>}
-                            <button type="button" disabled={saving || loading || !sesiDipilih || !selectedSession?.published || selectedSession?.status_aktif} onClick={() => handleSetActive(true)} className={actionClass + ' bg-[#003053] text-white hover:bg-[#164866]'}>Buka pendaftaran</button>
-                            <button type="button" disabled={saving || loading || !selectedSession?.status_aktif} onClick={() => handleSetActive(false)} className={actionClass + ' border border-slate-200 hover:bg-slate-50'}>Tutup pendaftaran</button>
-                        </div>
-                    </div>
-                    <div className="relative flex flex-col justify-between overflow-hidden rounded-2xl bg-[#003053] p-6 text-white">
-                        <div className="absolute inset-x-0 top-0 h-1 bg-[#c7a052]" />
-                        <div className="flex items-center justify-between gap-3"><h2 className="text-sm font-medium text-slate-200">Peserta berdaftar</h2><Users className="size-5 text-[#f4d891]" /></div>
-                        <div className="my-5"><p className="text-5xl font-semibold tracking-tight tabular-nums">{loading || attendanceLoading || attendanceError || !sesiDipilih ? '—' : visibleAttendance.length}</p><p className="mt-2 text-xs text-slate-300">{selectedSession ? 'Kehadiran bagi sesi ' + selectedSession.kod_sesi : 'Pilih sesi untuk melihat kehadiran'}</p></div>
-                        <div className="flex items-center gap-2 border-t border-white/15 pt-4 text-xs text-slate-200"><RefreshCw className="size-3.5 text-[#f4d891]" />Dikemas kini setiap 10 saat</div>
-                    </div>
-                </section>
-
-                <section id="attendance" aria-labelledby="attendance-title" className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white">
-                    <div className="flex flex-wrap items-center justify-between gap-4 px-5 pt-6 sm:px-6">
-                        <div className="flex items-center gap-3"><div className="flex size-10 items-center justify-center rounded-lg bg-[#edf3f7]"><Users className="size-5" /></div><div><h2 id="attendance-title" className="text-lg font-semibold">Senarai kehadiran</h2><p className="mt-0.5 text-xs text-slate-500">Semak rekod dan jana semula pasport peserta.</p></div></div>
-                        <button type="button" onClick={handleMuatTurunLaporan} disabled={!sesiDipilih || attendanceLoading || Boolean(attendanceError) || visibleAttendance.length === 0} className={actionClass + ' border border-slate-200 hover:bg-slate-50'}><Download className="size-4" /> Laporan CSV sesi</button>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-5 sm:px-6">
-                        <div className="relative w-full sm:max-w-md">
-                            <label htmlFor="attendance-search" className="sr-only">Cari kehadiran mengikut nama, bahagian, e-mel atau nombor pasport</label>
-                            <Search className="pointer-events-none absolute left-3.5 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-                            <input id="attendance-search" type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder="Cari nama, unit, e-mel, no. pasport…" className="min-h-12 w-full rounded-lg border border-slate-200 bg-slate-50 py-3 pl-10 pr-11 text-sm placeholder:text-slate-400 focus:border-[#003053] focus:bg-white focus:outline-2 focus:outline-offset-2 focus:outline-[#003053] [&::-webkit-search-cancel-button]:appearance-none" />
-                            {search && <button type="button" onClick={() => setSearch('')} aria-label="Kosongkan carian" className="absolute right-1 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-md text-slate-500 hover:bg-slate-200 focus-visible:outline-2 focus-visible:outline-[#003053]"><X className="size-4" /></button>}
-                        </div>
-                        <p role="status" className="text-xs text-slate-500">{loading || attendanceLoading ? 'Memuatkan kehadiran…' : attendanceError ? 'Kehadiran tidak tersedia' : !sesiDipilih ? 'Tiada sesi dipilih' : <><span className="font-semibold text-[#003053]">{filteredAttendance.length}</span> {hasSearch ? 'daripada ' + visibleAttendance.length + ' rekod' : 'rekod kehadiran'}</>}</p>
-                    </div>
-                    {visibleCopyFeedback && <div className="mx-5 mb-5 rounded-lg border border-slate-200 bg-slate-50 p-3 sm:mx-6">
-                        <p role="status" className={'text-sm ' + (visibleCopyFeedback.copied ? 'text-emerald-700' : 'text-slate-600')}>
-                            {visibleCopyFeedback.copied
-                                ? `Pautan pasport untuk ${visibleCopyFeedback.name} telah disalin. Sedia untuk dihantar kepada peserta.`
-                                : `Pautan pasport untuk ${visibleCopyFeedback.name} tidak dapat disalin secara automatik. Pilih dan salin pautan di bawah.`}
-                        </p>
-                        {!visibleCopyFeedback.copied && <div className="mt-3">
-                            <label htmlFor="passport-link-fallback" className="sr-only">Pautan pasport untuk disalin</label>
-                            <input id="passport-link-fallback" type="text" readOnly value={visibleCopyFeedback.url} onFocus={event => event.currentTarget.select()}
-                                className="min-h-11 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-[#003053] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053]" />
-                        </div>}
-                    </div>}
-                    <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Jadual kehadiran" aria-busy={loading || attendanceLoading}>
-                        <table className="w-full border-collapse text-left text-sm">
-                            <caption className="sr-only">Kehadiran sesi {selectedSession?.kod_sesi || 'perhimpunan'}; tindakan jana semula pasport pada setiap rekod.</caption>
-                            <thead className="border-y border-slate-200 bg-slate-50 text-xs font-medium text-slate-500"><tr>
-                                <th scope="col" className="min-w-60 px-5 py-3.5 sm:pl-6">Nama peserta</th><th scope="col" className="min-w-40 px-4 py-3.5">Bahagian / Unit</th><th scope="col" className="min-w-52 px-4 py-3.5">E-mel</th><th scope="col" className="whitespace-nowrap px-4 py-3.5">Waktu hadir</th><th scope="col" className="whitespace-nowrap px-4 py-3.5">No. pasport</th><th scope="col" className="sticky right-0 bg-slate-50 px-5 py-3.5 text-center whitespace-nowrap sm:pr-6">Tindakan</th>
-                            </tr></thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {!loading && !attendanceLoading && !attendanceError && filteredAttendance.map(peserta => <tr key={peserta.id} className="hover:bg-[#f7fafc]">
-                                    <th scope="row" className="px-5 py-4 text-left sm:pl-6"><div className="flex items-center gap-3"><span aria-hidden="true" className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#edf3f7] text-xs font-semibold text-[#42647c]">{peserta.nama_pegawai.trim().split(/\s+/).slice(0, 2).map(part => part[0]).join('')}</span><span className="font-semibold leading-relaxed">{peserta.nama_pegawai}</span></div></th>
-                                    <td className="px-4 py-4 text-slate-500">{peserta.bahagian_unit}</td>
-                                    <td className="max-w-64 break-words px-4 py-4 text-slate-500">{peserta.emel || '—'}</td>
-                                    <td className="whitespace-nowrap px-4 py-4 text-xs tabular-nums text-slate-600">{formatTime(peserta.waktu_hadir, true, selectedSession?.timezone)}</td>
-                                    <td className="px-4 py-4"><Link href={`/pasport/${encodeURIComponent(peserta.token_pasport)}`} className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-semibold tabular-nums hover:border-[#003053] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053]" aria-label={`Buka pasport nombor ${passportNumber(peserta.no_pasport)} untuk ${peserta.nama_pegawai}`}><Ticket className="size-3.5 text-slate-400" />{passportNumber(peserta.no_pasport)}</Link></td>
-                                    <td className="sticky right-0 bg-white px-5 py-3 text-center sm:pr-6">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <button type="button" disabled={copyingPassport !== null} onClick={() => handleCopyPassportLink(peserta)}
-                                                aria-label={`Salin pautan pasport untuk ${peserta.nama_pegawai}`} title={visibleCopyFeedback?.participantId === peserta.id && visibleCopyFeedback.copied ? 'Pautan pasport disalin' : 'Salin pautan pasport'}
-                                                className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-[#003053] transition-colors hover:border-[#b69a60] hover:bg-[#faf8f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053] disabled:opacity-40">
-                                                {visibleCopyFeedback?.participantId === peserta.id && visibleCopyFeedback.copied ? <Check className="size-4 text-emerald-700" /> : <Copy className="size-4" />}
-                                            </button>
-                                            <button type="button" disabled={!selectedSession} onClick={() => { if (selectedSession) setPassportPreview({ ...peserta, perhimpunan: selectedSession }); }} aria-label={`Jana semula pasport untuk ${peserta.nama_pegawai}`} title="Jana semula pasport" className="inline-flex size-11 shrink-0 items-center justify-center rounded-lg border border-slate-200 text-[#003053] transition-colors hover:border-[#b69a60] hover:bg-[#faf8f2] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#003053] disabled:opacity-40"><RefreshCw className="size-4" /></button>
-                                        </div>
-                                    </td>
-                                </tr>)}
-                                {(loading || attendanceLoading || attendanceError || !filteredAttendance.length) && <tr><td colSpan={6} className="px-6 py-14 text-center">
-                                    <div className="mx-auto mb-3 flex size-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">{loading || attendanceLoading ? <RefreshCw className="size-5 animate-spin motion-reduce:animate-none" /> : hasSearch ? <Search className="size-5" /> : <Users className="size-5" />}</div>
-                                    <p className="font-medium">{loading || attendanceLoading ? 'Memuatkan kehadiran…' : attendanceError ? 'Kehadiran tidak dapat dimuatkan' : !sesiDipilih ? 'Belum ada acara' : hasSearch ? 'Tiada padanan carian' : 'Belum ada rekod kehadiran'}</p>
-                                    <p className="mx-auto mt-2 max-w-sm text-xs leading-relaxed text-slate-500">{loading || attendanceLoading ? 'Sila tunggu sebentar.' : attendanceError ? 'Semak sambungan dan akses pentadbir. Sistem akan mencuba semula secara automatik.' : !sesiDipilih ? 'Daftar sesi baharu untuk mula mengurus kehadiran.' : hasSearch ? 'Cuba nama, bahagian, e-mel atau nombor pasport yang lain.' : 'Rekod peserta akan dipaparkan selepas pendaftaran.'}</p>
-                                    {hasSearch && !loading && !attendanceLoading && !attendanceError && <button type="button" onClick={() => setSearch('')} className="mt-4 min-h-11 px-3 text-sm font-semibold underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-[#003053]">Kosongkan carian</button>}
-                                </td></tr>}
-                            </tbody>
-                        </table>
-                    </div>
-                    <div className="flex flex-wrap items-center justify-between gap-2 border-t border-slate-200 px-5 py-3.5 text-xs text-slate-500 sm:px-6"><span className="flex items-center gap-1.5"><CircleCheck className="size-3.5 text-emerald-600" />Rekod pendaftaran kehadiran</span><span>Gunakan ikon <Copy className="mx-1 inline size-3" /> untuk salin pautan atau <RefreshCw className="mx-1 inline size-3" /> untuk jana semula pasport.</span></div>
-                </section>
-            </div>
-            {passportPreview && <AdminPassportDialog data={passportPreview} onClose={() => setPassportPreview(null)} />}
-        </div>
-    );
+  return <main className="event-catalog">
+    <header className="catalog-heading"><div><p className="catalog-intro">Ruang untuk setiap acara anda</p><h1>Acara saya</h1><p>Daripada idea pertama hingga hari acara. Semuanya bermula di sini.</p></div><Link href="/admin/sesi-baru" className="workspace-button catalog-create"><PlusIcon aria-hidden="true" />Cipta acara</Link></header>
+    {!loading && !error && events.length > 0 && <div className="catalog-overview" aria-label="Ringkasan acara"><p><strong>{events.length}</strong> acara dalam ruang anda</p><span /><p><strong>{openCount}</strong> pendaftaran dibuka</p><span /><p><strong>{draftCount}</strong> draf untuk dilengkapkan</p></div>}
+    {(events.length > 0 || query || status !== 'all') && !error && <div className="catalog-toolbar"><div className="catalog-filters" role="group" aria-label="Tapis status acara">{filters.map(filter => <button key={filter.value} type="button" aria-pressed={status === filter.value} onClick={() => setStatus(filter.value)}>{filter.label}</button>)}</div><div className="catalog-search"><SearchIcon aria-hidden="true" /><label htmlFor="event-search" className="sr-only">Cari acara</label><input id="event-search" type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Cari nama atau lokasi acara…" />{query && <button type="button" aria-label="Kosongkan carian" onClick={() => setQuery('')}><CrossIcon aria-hidden="true" /></button>}</div></div>}
+    {error ? <section className="catalog-empty" role="alert"><CalendarIcon aria-hidden="true" /><h2>Acara belum dapat dimuatkan</h2><p>{error}</p><button type="button" disabled={retrying} onClick={() => void retry()} className="workspace-button">{retrying ? 'Mencuba semula…' : 'Cuba lagi'}</button></section> : loading ? <div className="catalog-loading" role="status"><span />Memuatkan acara anda…</div> : !events.length ? <section className="catalog-empty"><div className="catalog-empty-art"><CalendarIcon aria-hidden="true" /></div><h2>Acara pertama anda bermula di sini</h2><p>Bengkel, majlis, persidangan atau hari keluarga. Sediakan butirannya dan jadikan ia milik anda.</p><Link href="/admin/sesi-baru" className="workspace-button"><PlusIcon aria-hidden="true" />Cipta acara pertama</Link></section> : !visible.length ? <section className="catalog-empty"><SearchIcon aria-hidden="true" /><h2>Tiada acara yang sepadan</h2><p>Cuba kata carian lain atau lihat semula semua acara anda.</p><button type="button" className="workspace-button secondary" onClick={() => { setQuery(''); setStatus('all'); }}>Lihat semua acara</button></section> : <>
+      <p role="status" className="catalog-result">{visible.length} {visible.length === events.length ? 'acara' : `daripada ${events.length} acara`}</p>
+      <div className="catalog-grid">{visible.map(event => {
+        const banner = safeEventAsset(event.banner_url), logo = safeEventAsset(event.logo_url);
+        const colors = organizerColors(event);
+        const style = { '--card-primary': colors.primary, '--card-accent': colors.accent, '--card-foreground': colors.foreground } as CSSProperties;
+        const statusText = !event.published ? 'Draf' : event.status_aktif ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup';
+        return <article key={event.id} className="catalog-card" style={style}>
+          <Link href={`/admin/events/${encodeURIComponent(event.id)}`} className={`catalog-art${banner ? '' : ' without-banner'}`} aria-label={`Urus acara ${event.tajuk}`} tabIndex={-1}>
+            {banner ? <img src={banner} alt={`Banner ${event.tajuk}`} /> : <div className="catalog-art-placeholder"><CalendarIcon aria-hidden="true" /><span>{event.tema || event.organizer_name || 'Acara anda, identiti anda.'}</span></div>}
+          </Link>
+          <div className="catalog-card-body"><div className="catalog-card-top"><span className={`catalog-event-status ${!event.published ? 'is-draft' : event.status_aktif ? 'is-open' : ''}`}>{statusText}</span>{logo && <img src={logo} alt={`Logo ${event.organizer_name || event.tajuk}`} className="catalog-event-logo" />}</div>
+            {event.organizer_name && <p className="catalog-organizer">{event.organizer_name}</p>}<h2><Link href={`/admin/events/${encodeURIComponent(event.id)}`}>{event.tajuk}</Link></h2>
+            <dl className="catalog-card-details"><div><dt><CalendarIcon aria-hidden="true" /><span className="sr-only">Tarikh</span></dt><dd>{formatDate(event.tarikh, event.timezone)}<ClockIcon aria-hidden="true" />{formatTime(event.masa_mula, false, event.timezone)}</dd></div><div><dt><PinIcon aria-hidden="true" /><span className="sr-only">Lokasi</span></dt><dd>{event.lokasi}</dd></div></dl>
+            <div className="catalog-card-actions"><Link href={`/admin/events/${encodeURIComponent(event.id)}`} className="catalog-manage" aria-label={`Urus acara ${event.tajuk}`}>Urus acara<ArrowForwardIcon aria-hidden="true" /></Link><Link href={organizerHref('/admin/kehadiran', event.id)} className="catalog-attendance" aria-label={`Kehadiran ${event.tajuk}`}><UserGroupIcon aria-hidden="true" />Kehadiran</Link></div>
+          </div>
+        </article>;
+      })}</div>
+    </>}
+  </main>;
 }
-

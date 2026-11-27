@@ -68,8 +68,8 @@ export function useOrganizer() {
   // Every module link includes the selection; browser Back/Forward restores it too.
   const event = resolveOrganizerEvent(visible.events, explicitId, null);
   function selectEvent(id: string) {
-    const target = editorId || pathname === '/admin/sesi-baru' ? '/admin' : pathname;
-    router.push(organizerHref(target, id), { scroll: false });
+    const target = pathname === '/admin/sesi-baru' ? '/admin' : pathname;
+    router.push(editorId ? `/admin/events/${encodeURIComponent(id)}` : organizerHref(target, id), { scroll: false });
   }
   return { ...visible, event, selectEvent, pathname, explicitId };
 }

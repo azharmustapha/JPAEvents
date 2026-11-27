@@ -187,7 +187,7 @@ export default function CabutanBertuahPage() {
     return (
         <main ref={screenRef} className={`cabutan-page${showHistory ? ' has-history' : ''}`}>
             <div className="cabutan-toolbar">
-                <Link href={organizerHref('/admin', eventId || null)} className="cabutan-back"><ArrowLeft aria-hidden="true" /><span>Kembali ke kehadiran</span></Link>
+                <Link href={organizerHref('/admin', eventId || null)} className="cabutan-back"><ArrowLeft aria-hidden="true" /><span>Acara saya</span></Link>
                 <span className="cabutan-airline"><Plane aria-hidden="true" />{sesiAktif?.organizer_name || 'Cabutan acara'}</span>
                 <div className="cabutan-view-controls">
                     <button type="button" onClick={() => setShowHistory(value => !value)} aria-label={showHistory ? 'Sembunyikan pemenang' : 'Senarai pemenang'} aria-expanded={showHistory} aria-controls="cabutan-history" className="cabutan-view-button">
@@ -201,7 +201,7 @@ export default function CabutanBertuahPage() {
 
             <header className="cabutan-header">
                 <div>
-                    <h1>Cabutan Bertuah</h1>
+                    <h1>Cabutan bertuah</h1>
                     <p>{sesiAktif?.tajuk || 'Acara JPAEvents'}</p>
                 </div>
                 <dl className="cabutan-stats">

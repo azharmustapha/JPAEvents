@@ -65,16 +65,10 @@
 .public-agenda li { border-left:3px solid var(--event-accent,#087f8c); padding-left:1rem; }
 .public-agenda time { font-size:.85rem; color:#526b7c; }
 .public-agenda h3 { font-weight:700; margin:.5rem 0; }
-.public-projector { background:white; padding:3rem; min-height:80svh; }
-.public-projector header { display:flex; justify-content:space-between; align-items:start; gap:2rem; }
-.public-projector h1 { font-size:clamp(2rem,4vw,4rem); font-weight:750; max-width:55rem; line-height:1.1; margin:1rem 0; }
-.projector-grid { display:grid; grid-template-columns:1fr 1fr; gap:3rem; align-items:center; text-align:center; margin:3rem 0; }
-.projector-count { display:block; font-size:clamp(5rem,15vw,14rem); line-height:1.4; }
-.public-projector:fullscreen { overflow:auto; }
 input:focus-visible,textarea:focus-visible,select:focus-visible,button:focus-visible,a:focus-visible { outline:3px solid #2457d6; outline-offset:3px; }
 fieldset:disabled { opacity:.65; }
-@media(max-width:800px) { .welcome-hero,.editor-grid,.public-event-grid { grid-template-columns:1fr; gap:2rem; } .event-welcome,.editor-page { padding:2rem 1rem; } .welcome-hero { padding:0 0 3rem; } .welcome-ticket { transform:none; max-width:32rem; } .welcome-explanation>div { grid-template-columns:1fr; gap:1.5rem; } .event-preview { position:static; } .public-event { margin:1rem; } .public-event-grid { padding:1.5rem; } .editor-heading { align-items:start; flex-direction:column; } .public-projector { padding:1.5rem; } .public-projector header { flex-direction:column; } }
-@media(max-width:480px) { .form-columns,.projector-grid { grid-template-columns:1fr; } .welcome-hero h1 { font-size:3rem; } .event-nav { padding:1rem; gap:1rem; } }
+@media(max-width:800px) { .welcome-hero,.editor-grid,.public-event-grid { grid-template-columns:1fr; gap:2rem; } .event-welcome,.editor-page { padding:2rem 1rem; } .welcome-hero { padding:0 0 3rem; } .welcome-ticket { transform:none; max-width:32rem; } .welcome-explanation>div { grid-template-columns:1fr; gap:1.5rem; } .event-preview { position:static; } .public-event { margin:1rem; } .public-event-grid { padding:1.5rem; } .editor-heading { align-items:start; flex-direction:column; } }
+@media(max-width:480px) { .form-columns { grid-template-columns:1fr; } .welcome-hero h1 { font-size:3rem; } .event-nav { padding:1rem; gap:1rem; } }
 
 :root {
   --background: #f7f9fb;

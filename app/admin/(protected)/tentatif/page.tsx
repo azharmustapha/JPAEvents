@@ -107,10 +107,10 @@ export default function UrusTentatifPage() {
             <div className="max-w-4xl mx-auto">
 
                 <div className="flex items-center gap-4 mb-8">
-                    <Link href={organizerHref('/admin', sesiDipilih || null)} aria-label="Kembali ke kehadiran acara" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
+                    <Link href={organizerHref('/admin', sesiDipilih || null)} aria-label="Kembali ke Acara saya" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
                         <ArrowLeft className="w-5 h-5 text-[#003053]" />
                     </Link>
-                    <h1 className="text-2xl font-bold text-[#003053] tracking-tight">Pengurusan Tentatif</h1>
+                    <h1 className="text-2xl font-bold text-[#003053] tracking-tight">Tentatif acara</h1>
                 </div>
 
                 {sessionError && <p role="alert" className="form-error">{sessionError}</p>}
@@ -126,7 +126,7 @@ export default function UrusTentatifPage() {
                 <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
 
                     <div className="md:col-span-2 rounded-2xl bg-white border border-slate-100 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] h-fit">
-                        <h2 className="text-lg font-bold text-[#003053] mb-6">{editingId ? 'Edit Agenda' : 'Borang Agenda'}</h2>
+                        <h2 className="text-lg font-bold text-[#003053] mb-6">{editingId ? 'Kemas kini aktiviti' : 'Tambah aktiviti'}</h2>
                         <form onSubmit={handleSimpanAgenda}>
                           <fieldset disabled={saving || agendaLoading || !sesiDipilih} className="space-y-5 disabled:opacity-50">
                             <div>
@@ -168,7 +168,7 @@ export default function UrusTentatifPage() {
                     <div className="md:col-span-3 rounded-2xl bg-white border border-slate-100 p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
                         <div className="flex items-center gap-2 mb-6 text-lg font-bold text-[#003053]">
                             <ListOrdered className="w-5 h-5" />
-                            <h2>Senarai Tentatif Semasa</h2>
+                            <h2>Atur cara acara</h2>
                         </div>
 
                         <div className="space-y-4">

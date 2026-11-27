@@ -8,6 +8,7 @@ import { organizerHref } from '@/lib/organizer-navigation';
 
 export function SiteFooter() {
   const { userId, event } = useOrganizer();
+  if (userId) return <footer className="organizer-footer" aria-label="Maklumat laman"><div><p><strong>JPAEvents</strong><span>Ruang untuk setiap acara.</span></p><nav aria-label="Pautan ruang penganjur"><Link href={organizerHref('/admin', event?.id ?? null)}>Acara saya</Link><Link href="/admin/sesi-baru">Cipta acara</Link></nav></div></footer>;
   const links = userId ? organizerLinks(event?.id ?? null) : [{ href: '/', label: 'Utama' }, { href: '/admin/login', label: 'Log masuk' }];
   return <footer className="site-footer government-footer" aria-label="Maklumat laman">
     <div className="footer-content">

@@ -109,7 +109,7 @@ export default function LamanImbasQR() {
 
                 {/* Header Navigasi */}
                 <div className="flex items-center justify-between mb-8">
-                    <Link href={organizerHref('/admin', eventId || null)} aria-label="Kembali ke kehadiran acara" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+                    <Link href={organizerHref('/admin', eventId || null)} aria-label="Kembali ke Acara saya" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
                         <ArrowLeft className="w-5 h-5 text-[#003053]" />
                     </Link>
                     <div className="inline-flex items-center gap-1.5 bg-[#003053] text-white px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase shadow-md">
@@ -124,7 +124,7 @@ export default function LamanImbasQR() {
                     {!eventId && <p role="status" className="workspace-loading">Pilih acara untuk mula mengimbas pas peserta.</p>}
                     {statusSemakan === 'menunggu' && eventId && (
                         <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-[0_20px_50px_rgb(0,0,0,0.05)] text-center">
-                            <h2 className="text-xl font-bold text-[#003053] mb-2">Imbas Pasport Digital</h2>
+                            <h2 className="text-xl font-bold text-[#003053] mb-2">Imbas QR peserta</h2>
                             <p className="text-sm font-medium text-slate-500 mb-6">Halakan kamera ke arah Kod QR pada telefon peserta.</p>
 
                             {/* Bekas Kamera html5-qrcode */}
