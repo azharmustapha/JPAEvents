@@ -45,7 +45,7 @@ export function SiteNavbar() {
         const { data: { session }, error: sessionError } = await client.auth.getSession();
         if (session || sessionError) throw error;
       }
-      window.location.replace('/admin/login');
+      window.location.replace('/');
     } catch { setError('Log keluar gagal. Sila cuba lagi.'); setSigningOut(false); }
   }
   function navigationLinks(items: OrganizerLink[]) {
@@ -64,7 +64,7 @@ export function SiteNavbar() {
     <nav aria-label="Navigasi utama" className="site-navigation">
       <div className="site-nav-row">
         <Link href={authenticated ? organizerHref('/admin', event?.id ?? null) : '/'} onClick={closeMenus} className="government-brand">
-          <Image src="/jata-negara.png" alt="Jata Negara" width={56} height={48} className="government-crest" />
+          <Image src="/jata-negara.png" alt="Jata Negara" width={45} height={36} className="government-crest" />
           <span><strong>{branding?.organizer_name || 'JPAEvents'}</strong><small>{branding?.tema || 'Setiap acara, satu pengalaman.'}</small></span>
         </Link>
         <div className="site-desktop-links" aria-busy={authLoading}>{!authLoading && <>

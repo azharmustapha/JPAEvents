@@ -37,9 +37,10 @@ export async function updateSession(request: NextRequest) {
     claims = Boolean(auth.data?.claims);
     unavailable = Boolean(auth.error && auth.error.name !== 'AuthSessionMissingError' && (!auth.error.status || auth.error.status >= 500));
   } catch { unavailable = true; }
-  if (!claims) {
+  const home = request.nextUrl.pathname === '/';
+  if ((home && claims) || (!home && !claims)) {
     const url = request.nextUrl.clone();
-    url.pathname = '/admin/login';
+    url.pathname = home ? '/admin' : '/admin/login';
     url.search = '';
     if (unavailable) {
       url.searchParams.set('error', 'unavailable');

@@ -14,7 +14,7 @@ export function SiteFooter() {
     <div className="footer-content">
       <div className="footer-brand">
         <Link href={userId ? organizerHref('/admin', event?.id ?? null) : '/'} className="footer-brand-link">
-          <Image src="/jata-negara.png" alt="Jata Negara" width={56} height={48} className="government-crest" />
+          <Image src="/jata-negara.png" alt="Jata Negara" width={45} height={36} className="government-crest" />
           <span><span className="footer-brand-name">{event?.organizer_name || 'JPAEvents'}</span><span className="footer-brand-subtitle">{event?.tema || 'Pengurusan dan pendaftaran acara'}</span></span>
         </Link>
         <p className="footer-description">{event ? event.tajuk : 'Cipta acara, kongsi pautan dan mudahkan pendaftaran peserta.'}</p>

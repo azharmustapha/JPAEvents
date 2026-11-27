@@ -4,7 +4,7 @@
 .site-navigation { max-width: 1280px; margin: auto; padding: 0 28px; }
 .site-nav-row { min-height: 80px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
 .government-brand { display: flex; align-items: center; gap: 12px; min-width: 0; max-width: 300px; }
-.government-crest { width: 56px; height: 48px; object-fit: contain; flex-shrink: 0; }
+.government-crest { width: auto; height: 36px; object-fit: contain; flex-shrink: 0; }
 .government-brand strong { display: block; font-size: 14px; line-height: 1.5; font-weight: 700; }
 .government-brand small { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-size: 11px; line-height: 1.6; margin-top: 2px; color: #64748b; }
 .site-desktop-links { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
