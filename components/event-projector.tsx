@@ -36,8 +36,8 @@ export function EventProjector({ event: initial }: { event: Acara }) {
   const event = snapshot.event;
   useEffect(() => {
     const tick = () => {
-      try { setClock(new Intl.DateTimeFormat('ms-MY', { timeZone: event?.timezone || 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())); }
-      catch { setClock(new Intl.DateTimeFormat('ms-MY', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', hour12: false }).format(new Date())); }
+      try { setClock(new Intl.DateTimeFormat('ms-MY', { timeZone: event?.timezone || 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date())); }
+      catch { setClock(new Intl.DateTimeFormat('ms-MY', { timeZone: 'Asia/Kuala_Lumpur', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }).format(new Date())); }
     };
     void Promise.resolve().then(tick);
     const timer = setInterval(tick, 1000);
