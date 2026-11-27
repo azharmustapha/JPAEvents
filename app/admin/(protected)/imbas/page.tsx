@@ -4,7 +4,8 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getBrowserSupabase } from '@/lib/supabaseClient';
 import { Html5QrcodeScanner } from 'html5-qrcode';
-import { useSearchParams } from 'next/navigation';
+import { useOrganizer } from '@/components/organizer-provider';
+import { organizerHref } from '@/lib/organizer-navigation';
 import { loadAdminSessions } from '@/lib/admin-data';
 import { parseScannedPassport } from '@/lib/events';
 import { passportNumber } from '@/lib/attendance';
@@ -15,7 +16,7 @@ import {
     CheckCircle2,
     XCircle,
     RefreshCcw
-} from 'lucide-react';
+} from '@/components/ui-icons';
 
 interface InfoPeserta {
     nama_pegawai: string;
@@ -28,7 +29,8 @@ interface InfoPeserta {
 }
 
 export default function LamanImbasQR() {
-    const eventId = useSearchParams().get('event');
+    const { event } = useOrganizer();
+    const eventId = event?.id;
     const [hasilImbasan, setHasilImbasan] = useState<string | null>(null);
     const [dataPeserta, setDataPeserta] = useState<InfoPeserta | null>(null);
     const [statusSemakan, setStatusSemakan] = useState<'menunggu' | 'sah' | 'tidak_sah'>('menunggu');
@@ -36,7 +38,7 @@ export default function LamanImbasQR() {
     const [scanError, setScanError] = useState('');
 
     useEffect(() => {
-        if (statusSemakan === 'menunggu') {
+        if (statusSemakan === 'menunggu' && eventId) {
             let disposed = false;
             let scanned = false;
             let cleared = false;
@@ -66,6 +68,7 @@ export default function LamanImbasQR() {
                         }
                         const client = getBrowserSupabase();
                         const event = (await loadAdminSessions(client)).find(item => item.id === eventId);
+                        if (disposed) return;
                         if (!event) {
                             if (!disposed) { setScanError('Tiada sesi aktif untuk pengesahan.'); setStatusSemakan('tidak_sah'); }
                             return;
@@ -101,12 +104,12 @@ export default function LamanImbasQR() {
     };
 
     return (
-        <div className="min-h-[calc(100svh-8rem)] bg-slate-50 text-slate-900 p-6 font-sans selection:bg-slate-200 flex flex-col">
+        <div className="organizer-scanner text-slate-900 font-sans flex flex-col">
             <div className="max-w-md mx-auto w-full flex-1 flex flex-col">
 
                 {/* Header Navigasi */}
                 <div className="flex items-center justify-between mb-8">
-                    <Link href="/admin" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
+                    <Link href={organizerHref('/admin', eventId || null)} aria-label="Kembali ke kehadiran acara" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors shadow-sm">
                         <ArrowLeft className="w-5 h-5 text-[#003053]" />
                     </Link>
                     <div className="inline-flex items-center gap-1.5 bg-[#003053] text-white px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase shadow-md">
@@ -118,7 +121,8 @@ export default function LamanImbasQR() {
                 <div className="flex-1 flex flex-col justify-center">
 
                     {/* Keadaan 1: Menunggu Imbasan (Kamera Aktif) */}
-                    {statusSemakan === 'menunggu' && (
+                    {!eventId && <p role="status" className="workspace-loading">Pilih acara untuk mula mengimbas pas peserta.</p>}
+                    {statusSemakan === 'menunggu' && eventId && (
                         <div className="rounded-2xl bg-white border border-slate-100 p-6 shadow-[0_20px_50px_rgb(0,0,0,0.05)] text-center">
                             <h2 className="text-xl font-bold text-[#003053] mb-2">Imbas Pasport Digital</h2>
                             <p className="text-sm font-medium text-slate-500 mb-6">Halakan kamera ke arah Kod QR pada telefon peserta.</p>

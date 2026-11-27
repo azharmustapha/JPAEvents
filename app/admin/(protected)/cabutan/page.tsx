@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
+import { useOrganizer } from '@/components/organizer-provider';
+import { organizerHref } from '@/lib/organizer-navigation';
 import { getBrowserSupabase } from '@/lib/supabaseClient';
 import { Acara, KehadiranPeserta, CabutanPemenang } from '@/types/database';
 import { passportNumber } from '@/lib/attendance';
@@ -24,10 +25,11 @@ import {
     Trophy,
     RotateCw,
     Users
-} from 'lucide-react';
+} from '@/components/ui-icons';
 
 export default function CabutanBertuahPage() {
-    const eventId = useSearchParams().get('event');
+    const { event } = useOrganizer();
+    const eventId = event?.id;
     const [senaraiPeserta, setSenaraiPeserta] = useState<KehadiranPeserta[]>([]);
     const [sesiAktif, setSesiAktif] = useState<Acara | null>(null);
     const [pemenangSemasa, setPemenangSemasa] = useState<CabutanPemenang | null>(null);
@@ -185,8 +187,8 @@ export default function CabutanBertuahPage() {
     return (
         <main ref={screenRef} className={`cabutan-page${showHistory ? ' has-history' : ''}`}>
             <div className="cabutan-toolbar">
-                <Link href="/admin" className="cabutan-back"><ArrowLeft aria-hidden="true" /><span>Kembali ke admin</span></Link>
-                <span className="cabutan-airline"><Plane aria-hidden="true" />JPAEvents</span>
+                <Link href={organizerHref('/admin', eventId || null)} className="cabutan-back"><ArrowLeft aria-hidden="true" /><span>Kembali ke kehadiran</span></Link>
+                <span className="cabutan-airline"><Plane aria-hidden="true" />{sesiAktif?.organizer_name || 'Cabutan acara'}</span>
                 <div className="cabutan-view-controls">
                     <button type="button" onClick={() => setShowHistory(value => !value)} aria-label={showHistory ? 'Sembunyikan pemenang' : 'Senarai pemenang'} aria-expanded={showHistory} aria-controls="cabutan-history" className="cabutan-view-button">
                         {showHistory ? <PanelRightClose aria-hidden="true" /> : <PanelRightOpen aria-hidden="true" />}<span>{showHistory ? 'Sembunyikan pemenang' : 'Senarai pemenang'}</span>

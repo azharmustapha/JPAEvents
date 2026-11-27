@@ -1,21 +1,17 @@
-/* Scope the presentation shell to this route, including after client navigation. */
-body:has(.cabutan-page) { background: #071e30; }
-body:has(.cabutan-page) > .airline-navbar,
-body:has(.cabutan-page) > .site-footer { display: none; }
-body:has(.cabutan-page) > .site-content { max-width: none; }
+/* The shared event navigation remains available outside fullscreen. */
 .cabutan-page {
-  --draw-navy: #082d46;
-  --draw-deep: #071e30;
-  --draw-gold: #e9c46a;
-  --draw-muted: #b5c8d5;
+  --draw-navy: var(--event-primary, #003053);
+  --draw-deep: #fff;
+  --draw-gold: #254c6c;
+  --draw-muted: #536b80;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  min-height: 100svh;
-  padding: 0 clamp(20px, 3vw, 64px);
-  color: #f5f8fa;
+  min-height: 600px;
+  padding: 0;
+  color: #173c58;
   background: var(--draw-deep);
   font-family: var(--font-inter), Arial, sans-serif;
 }
@@ -182,3 +178,38 @@ body:has(.cabutan-page) > .site-content { max-width: none; }
   .cabutan-page *, .cabutan-page *::before, .cabutan-page *::after { animation: none !important; transition: none !important; }
   .cabutan-confetti { display: none; }
 }
+
+/* Event workspace presentation: light surfaces, saved event colors. */
+.cabutan-page { height: auto; min-height: 600px; background: transparent; }
+.cabutan-page:fullscreen { background: #f0f6fa; padding: 24px; height: 100dvh; }
+.cabutan-toolbar { border-color: #cbdce9; }
+.cabutan-back:hover { color: #173c58; }
+.cabutan-airline { color: #254c6c; border-color: #cbdce9; }
+.cabutan-airline svg { transform: none; }
+.cabutan-view-button, .cabutan-view-button:last-child { background: #fff; color: #254c6c; border-color: #bfd1e0; }
+.cabutan-view-button:hover, .cabutan-view-button[aria-expanded='true'] { background: #e9f1f8; border-color: #87aac7; }
+.cabutan-stats > div { border-color: #cbdce9; }
+.cabutan-stat-eligible dd { color: #176a49; }
+.cabutan-stage { background: #fff; border-color: #bed2e4; border-top-color: var(--event-accent); }
+.cabutan-stage::before { background: none; }
+.cabutan-stage-meta { background: #f2f7fb; border-color: #dce6ee; }
+.cabutan-stage-meta strong, .cabutan-status, .cabutan-history-passport, .cabutan-latest-label { color: #254c6c; }
+.cabutan-status.is-saved { color: #176a49; }
+.cabutan-stage h2 { color: #173c58; }
+.cabutan-digit { background: var(--event-primary, #003053); color: var(--event-foreground, #fff); border: 1px solid #ccdbe7; box-shadow: 0 4px 0 #d7e3ed; }
+.cabutan-digit::after { background: color-mix(in srgb, var(--event-foreground) 15%, transparent); box-shadow: none; }
+.cabutan-digit > span { text-shadow: none; }
+.cabutan-stage-controls { background: #f2f7fb; border-color: #dce6ee; }
+.cabutan-draw-button { background: var(--event-primary, #003053); color: var(--event-foreground, #fff); border-color: transparent; }
+.cabutan-draw-button:hover:not(:disabled), .cabutan-draw-button:active:not(:disabled) { background: var(--event-primary, #003053); filter: brightness(.93); }
+.cabutan-draw-button:disabled { background: #e4ecf3; color: #536b80; border-color: #cbdce9; }
+.cabutan-history { background: #fff; border-color: #bed2e4; }
+.cabutan-history-header > span { border-color: #bfd1e0; }
+.cabutan-history-list li { border-color: #dce6ee; }
+.cabutan-history-list li.is-latest { background: #eff6fb; border-color: #a8c4da; }
+.cabutan-latest-label { background: #e4eef7; }
+.cabutan-history-note { border-color: #dce6ee; }
+.cabutan-history-note svg { color: #176a49; }
+.cabutan-footer { color: #536b80; }
+.cabutan-confetti i { background: var(--event-accent, #087f8c); }
+@media (max-width: 600px) { .cabutan-page { padding: 0; } .cabutan-page:fullscreen { padding: 16px; } }

@@ -5,6 +5,7 @@ import "./globals.css";
 import { Suspense } from 'react';
 import { SiteNavbar } from '@/components/site-navbar';
 import { SiteFooter } from '@/components/site-footer';
+import { OrganizerProvider } from '@/components/organizer-provider';
 
 const inter = Inter({ subsets: ["latin"], variable: '--font-inter' });
 
@@ -22,11 +23,13 @@ export default function RootLayout({
   return (
     <html lang="ms">
       <body className={`${inter.className} ${inter.variable} site-background text-slate-900 antialiased selection:bg-amber-200 selection:text-[#003053]`}>
-        <Suspense fallback={<div className="h-20 bg-[#003053]" />}><SiteNavbar /></Suspense>
+        <OrganizerProvider>
+        <Suspense fallback={<div className="h-20 bg-white" />}><SiteNavbar /></Suspense>
         <div className="site-content mx-auto max-w-7xl">
         {children}
         </div>
-        <SiteFooter />
+        <Suspense fallback={null}><SiteFooter /></Suspense>
+        </OrganizerProvider>
         <SpeedInsights />
       </body>
     </html>

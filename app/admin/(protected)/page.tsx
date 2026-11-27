@@ -1,16 +1,16 @@
 'use client';
 
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useOrganizer } from '@/components/organizer-provider';
 import { getBrowserSupabase } from '@/lib/supabaseClient';
-import { Acara, KehadiranPeserta, PassportData } from '@/types/database';
+import { KehadiranPeserta, PassportData } from '@/types/database';
 import { filterAttendance, passportNumber } from '@/lib/attendance';
 import { AdminPassportDialog } from '@/components/admin-passport-dialog';
 import { escapeCsvCell } from '@/lib/csv';
 import { startPolling } from '@/lib/polling';
-import { loadAdminSessions, loadAttendance } from '@/lib/admin-data';
+import { loadAttendance } from '@/lib/admin-data';
 import { formatDate, formatTime } from '@/lib/date';
 import {
     Calendar,
@@ -30,18 +30,14 @@ import {
     Copy,
     Check,
     X,
-    LogOut,
     CircleCheck
-} from 'lucide-react';
+} from '@/components/ui-icons';
 
 export default function AdminPage() {
-    const router = useRouter();
-    const [senaraiSesi, setSenaraiSesi] = useState<Acara[]>([]);
-    const [sesiDipilih, setSesiDipilih] = useState<string>('');
+    const { events: senaraiSesi, event: selectedSession, loading, error: sessionError, selectEvent: setSesiDipilih, refreshEvents } = useOrganizer();
+    const sesiDipilih = selectedSession?.id || '';
     const [senaraiKehadiran, setSenaraiKehadiran] = useState<KehadiranPeserta[]>([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [sessionError, setSessionError] = useState('');
     const [attendanceError, setAttendanceError] = useState('');
     const [attendanceSession, setAttendanceSession] = useState('');
     const [saving, setSaving] = useState(false);
@@ -56,17 +52,6 @@ export default function AdminPage() {
         url: string;
         copied: boolean;
     } | null>(null);
-
-    const receiveSessions = useCallback((data: Acara[]) => {
-        setSenaraiSesi(data);
-        setSessionError('');
-        const aktif = data.find(s => s.status_aktif) || data[0];
-        setSesiDipilih(current => data.some(s => s.id === current) ? current : aktif?.id || '');
-        setLoading(false);
-    }, []);
-
-    useEffect(() => startPolling(() => loadAdminSessions(getBrowserSupabase()), receiveSessions,
-        () => { setSessionError('Senarai sesi tidak dapat dimuatkan. Semak sambungan dan akses pentadbir.'); setLoading(false); }), [receiveSessions]);
 
     useEffect(() => {
         if (!sesiDipilih) return;
@@ -115,28 +100,13 @@ export default function AdminPage() {
         URL.revokeObjectURL(url);
     };
 
-    // Fungsi Log Keluar Admin
-    const handleLogKeluar = async () => {
-        setSaving(true);
-        try {
-            const { error } = await getBrowserSupabase().auth.signOut({ scope: 'local' });
-            if (error) throw error;
-            setSenaraiKehadiran([]);
-            router.replace('/admin/login');
-            router.refresh();
-        } catch {
-            setError('Log keluar gagal. Sila cuba lagi.');
-            setSaving(false);
-        }
-    };
-
     const handleSetActive = async (isOpen: boolean) => {
         setSaving(true);
         setError('');
         try {
             const { error } = await getBrowserSupabase().rpc('set_registration_open', { event_id: sesiDipilih, is_open: isOpen });
             if (error) throw error;
-            receiveSessions(await loadAdminSessions(getBrowserSupabase()));
+            await refreshEvents();
         } catch { setError('Status sesi tidak dapat dikemas kini. Semak akses pentadbir.'); }
         finally { setSaving(false); }
     };
@@ -163,7 +133,6 @@ export default function AdminPage() {
 
     const visibleAttendance = attendanceSession === sesiDipilih ? senaraiKehadiran : [];
     const visibleCopyFeedback = copyFeedback?.sessionId === sesiDipilih ? copyFeedback : null;
-    const selectedSession = senaraiSesi.find(session => session.id === sesiDipilih);
     const attendanceLoading = Boolean(sesiDipilih) && attendanceSession !== sesiDipilih;
     const filteredAttendance = filterAttendance(visibleAttendance, search);
     const hasSearch = Boolean(search.trim());
@@ -173,21 +142,19 @@ export default function AdminPage() {
         { href: '/admin/imbas', label: 'Imbas QR', icon: ScanLine },
         { href: '/admin/tentatif', label: 'Urus tentatif', icon: ListOrdered },
         { href: '/admin/cabutan', label: 'Cabutan bertuah', icon: Gift },
-        { href: '/tayangan', label: 'Skrin projektor', icon: Tv },
+        { href: selectedSession?.published ? '/tayangan' : '/admin/events/' + sesiDipilih, label: selectedSession?.published ? 'Skrin projektor' : 'Terbitkan untuk tayangan', icon: Tv },
     ];
 
     return (
-        <div className="min-h-[calc(100svh-8rem)] px-4 py-7 text-[#003053] sm:px-6 lg:px-10 lg:py-10">
+        <div className="organizer-dashboard text-[#003053]">
             <div className="mx-auto max-w-7xl space-y-7">
                 <header className="flex flex-wrap items-start justify-between gap-5">
                     <div>
-                        <p className="mb-1.5 text-sm font-medium text-slate-500">Ruang penganjur JPAEvents</p>
-                        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">Acara saya</h1>
-                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">Urus acara, semak kehadiran dan sediakan pasport peserta.</p>
+                        <h2 className="text-2xl font-bold tracking-tight">Kehadiran & pendaftaran</h2>
+                        <p className="mt-2 max-w-xl text-sm leading-relaxed text-slate-500">Semak peserta dan urus perjalanan acara pilihan anda.</p>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                         <Link href="/admin/sesi-baru" className={actionClass + ' bg-[#003053] text-white hover:bg-[#164866]'}><PlusCircle className="size-4" /> Cipta acara</Link>
-                        <button type="button" disabled={saving} onClick={handleLogKeluar} className={actionClass + ' border border-slate-200 bg-white text-slate-600 hover:bg-red-50 hover:text-red-700'}><LogOut className="size-4" /><span className="sr-only sm:not-sr-only">Log keluar</span></button>
                     </div>
                 </header>
 
@@ -200,7 +167,7 @@ export default function AdminPage() {
                 <section aria-label="Ringkasan sesi" className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_19rem]">
                     <div className="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
                         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                            <label htmlFor="admin-session" className="flex items-center gap-2 text-sm font-semibold"><Calendar className="size-4 text-slate-500" /> Acara</label>
+                            <label htmlFor="admin-session" className="flex items-center gap-2 text-sm font-semibold"><Calendar className="size-4 text-slate-500" /> Pendaftaran acara</label>
                             {selectedSession && <span className={'inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ' + (selectedSession.status_aktif ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-600')}><span className={'size-1.5 rounded-full ' + (selectedSession.status_aktif ? 'bg-emerald-600' : 'bg-slate-400')} />{selectedSession.status_aktif ? 'Pendaftaran dibuka' : 'Pendaftaran ditutup'}</span>}
                         </div>
                         <select id="admin-session" value={sesiDipilih} disabled={loading || saving || !senaraiSesi.length}
@@ -228,7 +195,7 @@ export default function AdminPage() {
                     </div>
                 </section>
 
-                <section aria-labelledby="attendance-title" className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+                <section id="attendance" aria-labelledby="attendance-title" className="scroll-mt-24 overflow-hidden rounded-2xl border border-slate-200 bg-white">
                     <div className="flex flex-wrap items-center justify-between gap-4 px-5 pt-6 sm:px-6">
                         <div className="flex items-center gap-3"><div className="flex size-10 items-center justify-center rounded-lg bg-[#edf3f7]"><Users className="size-5" /></div><div><h2 id="attendance-title" className="text-lg font-semibold">Senarai kehadiran</h2><p className="mt-0.5 text-xs text-slate-500">Semak rekod dan jana semula pasport peserta.</p></div></div>
                         <button type="button" onClick={handleMuatTurunLaporan} disabled={!sesiDipilih || attendanceLoading || Boolean(attendanceError) || visibleAttendance.length === 0} className={actionClass + ' border border-slate-200 hover:bg-slate-50'}><Download className="size-4" /> Laporan CSV sesi</button>

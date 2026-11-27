@@ -4,7 +4,7 @@ import { safeEventAsset } from '@/lib/event-assets';
 import { BrandLogo } from '@/components/brand-logo';
 import { EventTheme } from '@/components/event-theme';
 import { QRCodeSVG } from 'qrcode.react';
-import { Calendar, Clock, MapPin, CheckCircle2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, CheckCircle2 } from '@/components/ui-icons';
 import { passportNumber } from '@/lib/attendance';
 import { formatDate, formatTime } from '@/lib/date';
 import type { PassportData } from '@/types/database';

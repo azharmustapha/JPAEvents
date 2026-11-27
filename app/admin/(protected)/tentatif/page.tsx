@@ -2,18 +2,17 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
-import { loadAdminSessions } from '@/lib/admin-data';
+import { useOrganizer } from '@/components/organizer-provider';
+import { organizerHref } from '@/lib/organizer-navigation';
 import { getBrowserSupabase } from '@/lib/supabaseClient';
-import { Perhimpunan, AturCara } from '@/types/database';
-import { ArrowLeft, ListOrdered, CheckCircle2, AlertCircle, Pencil, Trash2 } from 'lucide-react';
+import { AturCara } from '@/types/database';
+import { ArrowLeft, ListOrdered, CheckCircle2, AlertCircle, Pencil, Trash2 } from '@/components/ui-icons';
 import { formatTime, toTimeInput } from '@/lib/date';
 import { TimeInput } from '@/components/time-input';
 
 export default function UrusTentatifPage() {
-    const selectedEventId = useSearchParams().get('event');
-    const [senaraiSesi, setSenaraiSesi] = useState<Perhimpunan[]>([]);
-    const [sesiDipilih, setSesiDipilih] = useState<string>('');
+    const { event, error: sessionError } = useOrganizer();
+    const sesiDipilih = event?.id || '';
     const [senaraiAturCara, setSenaraiAturCara] = useState<AturCara[]>([]);
     const [mesej, setMesej] = useState<{ jenis: 'sukses' | 'ralat'; teks: string } | null>(null);
 
@@ -33,14 +32,6 @@ export default function UrusTentatifPage() {
         setAgendaTurutan(Math.max(0, ...items.map(item => item.turutan)) + 1);
     };
 
-    const handlePilihSesi = (id: string) => {
-        resetForm([]);
-        setMesej(null);
-        setSenaraiAturCara([]);
-        setAgendaLoading(true);
-        setSesiDipilih(id);
-    };
-
     const handleEditAgenda = (item: AturCara) => {
         setEditingId(item.id);
         setAgendaTajuk(item.tajuk_agenda);
@@ -52,21 +43,6 @@ export default function UrusTentatifPage() {
         titleInputRef.current?.focus();
         titleInputRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
     };
-
-    useEffect(() => {
-        let cancelled = false;
-        async function load() {
-            try {
-                const data = await loadAdminSessions(getBrowserSupabase());
-                if (cancelled) return;
-                setSenaraiSesi(data);
-                setSesiDipilih(selectedEventId && data.some(s => s.id === selectedEventId) ? selectedEventId : '');
-                setAgendaLoading(false);
-            } catch { if (!cancelled) { setMesej({jenis:'ralat',teks:'Senarai acara tidak dapat dimuatkan.'}); setAgendaLoading(false); } }
-        }
-        void load();
-        return () => { cancelled = true; };
-    }, [selectedEventId]);
 
     useEffect(() => {
         if (!sesiDipilih) return;
@@ -127,31 +103,17 @@ export default function UrusTentatifPage() {
     };
 
     return (
-        <div className="min-h-[calc(100svh-8rem)] bg-slate-50 text-slate-900 p-6 md:p-10 font-sans selection:bg-slate-200">
+        <div className="organizer-agenda text-slate-900 font-sans">
             <div className="max-w-4xl mx-auto">
 
                 <div className="flex items-center gap-4 mb-8">
-                    <Link href="/admin" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
+                    <Link href={organizerHref('/admin', sesiDipilih || null)} aria-label="Kembali ke kehadiran acara" className="p-3 bg-white border border-slate-200 rounded-full hover:bg-slate-50 transition-colors">
                         <ArrowLeft className="w-5 h-5 text-[#003053]" />
                     </Link>
                     <h1 className="text-2xl font-bold text-[#003053] tracking-tight">Pengurusan Tentatif</h1>
                 </div>
 
-                <div className="mb-8 rounded-3xl bg-white border border-slate-100 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-                    <label htmlFor="agenda-event" className="block text-xs font-bold tracking-widest uppercase text-slate-500 mb-3">Acara pilihan</label>
-                    <select
-                        id="agenda-event"
-                        disabled={saving}
-                        value={sesiDipilih}
-                        onChange={(e) => handlePilihSesi(e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-2xl px-5 py-4 text-sm font-bold text-[#003053] focus:outline-none focus:border-black transition-all"
-                    >
-                        <option value="" disabled>{senaraiSesi.length ? 'Pilih acara' : 'Belum ada acara'}</option>
-                        {senaraiSesi.map((s) => (
-                            <option key={s.id} value={s.id}>{s.tajuk} ({s.kod_sesi})</option>
-                        ))}
-                    </select>
-                </div>
+                {sessionError && <p role="alert" className="form-error">{sessionError}</p>}
 
                 {mesej && (
                     <div role={mesej.jenis === 'ralat' ? 'alert' : 'status'} className={`p-4 mb-6 rounded-2xl text-sm font-bold flex items-center gap-2 border ${mesej.jenis === 'sukses' ? 'bg-emerald-50 border-emerald-100 text-emerald-700' : 'bg-red-50 border-red-100 text-red-600'

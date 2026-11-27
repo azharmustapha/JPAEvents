@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Download, FileDown, Loader2, RefreshCw, X } from 'lucide-react';
+import { Download, FileDown, Loader2, RefreshCw, X } from '@/components/ui-icons';
 import { PassportCard } from '@/components/passport-card';
 import { passportToPng } from '@/lib/passport-image';
 import type { PassportData } from '@/types/database';

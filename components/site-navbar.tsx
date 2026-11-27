@@ -1,52 +1,62 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import Image from 'next/image';
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
-import { BrandLogo } from './brand-logo';
-
-const links = [
-  { href: '/', label: 'Utama' },
-  { href: '/admin/login', label: 'Log Masuk' },
-];
+import { HamburgerMenuIcon, CrossIcon, LogoutIcon } from '@govtechmy/myds-react/icon';
+import { getBrowserSupabase } from '@/lib/supabaseClient';
+import { useOrganizer } from './organizer-provider';
+import { organizerLinks } from './organizer-links';
+import { organizerHref } from '@/lib/organizer-navigation';
 
 export function SiteNavbar() {
-  const pathname = usePathname();
+  const { userId, authLoading, event, pathname } = useOrganizer();
   const [openPath, setOpenPath] = useState<string | null>(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const [error, setError] = useState('');
   const open = openPath === pathname;
-
-  function navigationLinks() {
-    return links.map(({ href, label }) => {
-      const active = href === '/' ? pathname === '/' : pathname.startsWith(href);
-      return (
-        <Link key={href} href={href} onClick={() => setOpenPath(null)}
-          aria-current={active ? 'page' : undefined}
-          className={`flex min-h-11 items-center rounded-lg px-4 py-2 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 ${active ? 'bg-white/10 text-amber-200 underline decoration-amber-200 decoration-2 underline-offset-8' : 'text-white hover:bg-white/10'}`}>
-          {label}
-        </Link>
-      );
-    });
+  const authenticated = Boolean(userId);
+  const links = authenticated ? organizerLinks(event?.id ?? null) : [
+    { href: '/', label: 'Utama', activePath: '/', icon: null },
+    { href: '/admin/login', label: 'Log masuk', activePath: '/admin/login', icon: null },
+  ];
+  async function signOut() {
+    setSigningOut(true); setError('');
+    try {
+      const client = getBrowserSupabase();
+      const { error } = await client.auth.signOut({ scope: 'local' });
+      if (error) {
+        // This SDK also clears local credentials when remote revocation fails.
+        // Offer retry only when there is still a local session to sign out.
+        const { data: { session }, error: sessionError } = await client.auth.getSession();
+        if (session || sessionError) throw error;
+      }
+      window.location.replace('/admin/login');
+    } catch { setError('Log keluar gagal. Sila cuba lagi.'); setSigningOut(false); }
   }
-
-  return (
-    <header className="airline-navbar bg-[#003053] text-white" onKeyDown={event => { if (event.key === 'Escape') setOpenPath(null); }}>
-      <nav aria-label="Navigasi utama" className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="flex min-h-20 items-center justify-between gap-3">
-          <Link href="/" onClick={() => setOpenPath(null)} className="flex min-w-0 items-center gap-3 rounded-xl focus-visible:outline-2 focus-visible:outline-amber-300">
-            <BrandLogo />
-            <span><span className="block text-sm font-bold tracking-wide sm:text-base">JPAEvents</span><span className="mt-0.5 hidden text-xs text-slate-200 sm:block">Pendaftaran untuk semua acara</span></span>
-          </Link>
-          <div className="hidden items-center gap-2 md:flex">{navigationLinks()}</div>
-          <button type="button" aria-label={open ? 'Tutup menu navigasi' : 'Buka menu navigasi'}
-            aria-expanded={open} aria-controls="mobile-navigation"
-            onClick={() => setOpenPath(open ? null : pathname)}
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/25 hover:bg-white/10 focus-visible:outline-2 focus-visible:outline-amber-300 md:hidden">
-            {open ? <X aria-hidden="true" size={22} /> : <Menu aria-hidden="true" size={22} />}
-          </button>
-        </div>
-        {open && <div id="mobile-navigation" className="grid gap-1 border-t border-white/15 py-3 md:hidden">{navigationLinks()}</div>}
-      </nav>
-    </header>
-  );
+  function navigationLinks() {
+    return <>{links.map(({ href, label, activePath, icon: Icon }) => {
+      const active = activePath === '/admin' || activePath === '/' ? pathname === activePath : Boolean(activePath && pathname.startsWith(activePath));
+      if (authenticated && label === 'Tayangan' && !event?.published) return <span key={label} aria-disabled="true" title="Terbitkan acara untuk membuka tayangan" className="site-nav-link is-disabled">{Icon && <Icon aria-hidden="true" className="size-4" />}<span>{label}</span></span>;
+      return <Link key={label} href={href} onClick={() => setOpenPath(null)} aria-current={active ? 'page' : undefined} className={`site-nav-link${active ? ' is-active' : ''}`}>
+        {Icon && <Icon aria-hidden="true" className="size-4" />}<span>{label}</span>
+      </Link>;
+    })}{authenticated && <button type="button" onClick={() => void signOut()} disabled={signingOut} className="site-nav-link nav-logout"><LogoutIcon aria-hidden="true" className="size-4" /><span>{signingOut ? 'Keluar…' : 'Log keluar'}</span></button>}</>;
+  }
+  return <header className="airline-navbar government-navbar" onKeyDown={e => { if (e.key === 'Escape') setOpenPath(null); }}>
+    <nav aria-label="Navigasi utama" className="site-navigation">
+      <div className="site-nav-row">
+        <Link href={authenticated ? organizerHref('/admin', event?.id ?? null) : '/'} onClick={() => setOpenPath(null)} className="government-brand">
+          <Image src="/jata-negara.png" alt="Jata Negara" width={56} height={48} className="government-crest" />
+          <span><strong>{event?.organizer_name || 'JPAEvents'}</strong><small>{event?.tema || 'Pengurusan dan pendaftaran acara'}</small></span>
+        </Link>
+        <div className="site-desktop-links" aria-busy={authLoading}>{!authLoading && navigationLinks()}</div>
+        <button type="button" aria-label={open ? 'Tutup menu navigasi' : 'Buka menu navigasi'} aria-expanded={open} aria-controls="mobile-navigation" onClick={() => setOpenPath(open ? null : pathname)} className="site-menu-toggle">
+          {open ? <CrossIcon aria-hidden="true" /> : <HamburgerMenuIcon aria-hidden="true" />}
+        </button>
+      </div>
+      {open && <div id="mobile-navigation" className="site-mobile-links">{navigationLinks()}</div>}
+      {error && <p role="alert" className="nav-error">{error}</p>}
+    </nav>
+  </header>;
 }
